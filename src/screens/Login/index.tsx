@@ -3,6 +3,11 @@ import { styles } from './styles';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export function Login() {
+
+    let onPress = () => {
+        console.log('Clicou em logar')
+    }
+
   return (
     <LinearGradient
       colors={['#fff', '#fff', '#fff', '#05458E']}
@@ -14,13 +19,16 @@ export function Login() {
         <TextInput
           style={styles.input}
           placeholder="CPF"
+          placeholderTextColor='#00000066'
         />
         <TextInput
           style={styles.input}
           placeholder='Senha'
-          placeholderTextColor='black'
+          placeholderTextColor='#00000066'
         />
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity 
+            style={styles.button}
+            onPress={onPress}>
           <Text style={styles.textButton}>Login</Text>
         </TouchableOpacity>
       </View>
