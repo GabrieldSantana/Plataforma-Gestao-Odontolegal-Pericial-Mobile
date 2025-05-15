@@ -1,14 +1,19 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'white',
+    flex: 1, // Ocupa toda a tela
     alignItems: 'center',
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 100,
   },
+
+  gradient: {
+    flex: 1, // O degradê preenche todo o SafeAreaView
+    width: '100%', // Garante que o degradê ocupe a largura total
+    height: '100%',
+    paddingTop: 120,
+    alignItems: 'center', // Centraliza o conteúdo
+  },
+
 
   formulario: {
     marginTop: 90,
@@ -47,5 +52,3 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-
