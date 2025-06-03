@@ -17,7 +17,7 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="VisualizacaoCasos"
+          name="(casos)"
           options={{
             title: 'Casos',
             tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
