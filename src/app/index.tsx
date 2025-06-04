@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Login() {
   function logar(){
-    router.navigate("/(tabs)/VisualizacaoCasos");
+    router.navigate("/(tabs)/(casos)");
     console.log('login feito')
   }
 
