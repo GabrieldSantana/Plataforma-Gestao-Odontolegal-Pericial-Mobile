@@ -1,6 +1,7 @@
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, FlatList, SafeAreaView, View } from 'react-native';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { StyleSheet, FlatList, SafeAreaView, View, Alert } from 'react-native';
 import { Searchbar, Button, Text, FAB } from 'react-native-paper';
 import { CardCaso } from '../../../components/CardCaso';
 
@@ -44,7 +45,40 @@ export const DATA = [
 ];
 
 export default function Casos() {
+    interface Caso {
+        id: string;
+        title: string;
+        dataDeRegistro: string;
+        responsavel: string;
+        vitima: string;
+        descricao?: string; // Opcional, já que nem todos os objetos têm essa propriedade
+    }
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [casos, setCasos] = useState<Caso[]>([]);
+
+
+  const fetchCasos = async () => {
+  try {
+    const response = await axios.get('http://192.168.1.62:3000/casos', { timeout: 10000 });
+    const data: Caso[] = Array.isArray(response.data)
+      ? response.data
+      : response.data.casos && Array.isArray(response.data.casos)
+      ? response.data.casos
+      : [];
+    setCasos(data);
+    console.log('API encontrada, dados processados:', data);
+    if (data.length === 0) {
+      Alert.alert('Aviso', 'Nenhum caso retornado pela API.');
+    }
+  } catch (error) {
+    console.error('Erro ao buscar casos:', error);
+    setCasos([]);
+    Alert.alert('Erro', 'Falha ao carregar os casos: ' + (error as Error).message);
+  }
+};
+  useEffect(() => {
+    fetchCasos();}, []);
 
   return (
     <SafeAreaView style={styles.container}>
