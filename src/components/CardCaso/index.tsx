@@ -13,7 +13,7 @@ interface CardProps {
 export function CardCaso({title, dateRegister, responsavel, vitima, casoRota}: CardProps){
 
     function entrarCaso(id: String){
-        console.log(`Entrou na rota ${id}`);
+        // console.log(`Entrou na rota ${id}`);
         router.navigate(`/caso/${id}`)
     }
 
