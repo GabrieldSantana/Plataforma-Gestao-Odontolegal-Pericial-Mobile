@@ -45,40 +45,31 @@ export const DATA = [
 ];
 
 export default function Casos() {
-    interface Caso {
-        id: string;
-        title: string;
-        dataDeRegistro: string;
-        responsavel: string;
-        vitima: string;
-        descricao?: string; // Opcional, já que nem todos os objetos têm essa propriedade
-    }
+  interface Caso {
+      id: string;
+      title: string;
+      dataDeRegistro: string;
+      responsavel: string;
+      vitima: string;
+      descricao?: string; // Opcional, já que nem todos os objetos têm essa propriedade
+  }
 
   const [searchQuery, setSearchQuery] = useState('');
   const [casos, setCasos] = useState<Caso[]>([]);
 
-
-  const fetchCasos = async () => {
-  try {
-    const response = await axios.get('http://192.168.1.62:3000/casos', { timeout: 10000 });
-    const data: Caso[] = Array.isArray(response.data)
-      ? response.data
-      : response.data.casos && Array.isArray(response.data.casos)
-      ? response.data.casos
-      : [];
-    setCasos(data);
-    console.log('API encontrada, dados processados:', data);
-    if (data.length === 0) {
-      Alert.alert('Aviso', 'Nenhum caso retornado pela API.');
+  async function fetchCasos(){
+    try{
+      const response = await axios.get("http://192.168.1.62:3000/casos");
+      await setCasos(response.data)
+    } catch (erro){
+      console.log(erro)
     }
-  } catch (error) {
-    console.error('Erro ao buscar casos:', error);
-    setCasos([]);
-    Alert.alert('Erro', 'Falha ao carregar os casos: ' + (error as Error).message);
   }
-};
+
+  // executa fetchCasos() toda vez q a variável casos sofrer mudanças
   useEffect(() => {
-    fetchCasos();}, []);
+    fetchCasos()
+  }, [casos])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,7 +84,7 @@ export default function Casos() {
           style={styles.btnFiltrar}
           icon="filter"
           mode="outlined"
-          onPress={() => console.log('Botão de filtro pressionado')}
+          onPress={() => console.log('Botão filtrar acionado')}
         >
           Filtrar
         </Button>
@@ -103,7 +94,7 @@ export default function Casos() {
           Visualização dos Casos
         </Text>
         <FlatList
-          data={DATA}
+          data={casos}
           renderItem={({ item }) => <CardCaso title={item.title} dateRegister={item.dataDeRegistro} vitima={item.vitima} responsavel={item.responsavel} casoRota={item.id}/>}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.flatListContent}

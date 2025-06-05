@@ -35,6 +35,13 @@
       "dataDeRegistro": "11/12/2024",
       "responsavel": "Dr Marcos Silva",
       "vitima": "Rhuan"
+    },
+    {
+      "id": "7",
+      "title": "Agressão",
+      "dataDeRegistro": "11/12/2024",
+      "responsavel": "Dr Silva",
+      "vitima": "Meiki"
     }
   ]
 }
