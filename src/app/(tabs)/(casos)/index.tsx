@@ -5,45 +5,6 @@ import { StyleSheet, FlatList, SafeAreaView, View, Alert } from 'react-native';
 import { Searchbar, Button, Text, FAB } from 'react-native-paper';
 import { CardCaso } from '../../../components/CardCaso';
 
-export const DATA = [
-  {
-    id: '1',
-    title: 'Identificação de vítima',
-    dataDeRegistro: '12/02/2023',
-    responsavel: 'Dr Marcos Silva',
-    vitima: 'Geovane Correia',
-    descricao: 'djfhakljfashflkdsjfh'
-  },
-  {
-    id: '2',
-    title: 'Mordida forense em agressão',
-    dataDeRegistro: '25/03/2021',
-    responsavel: 'Dr Marcos Silva',
-    vitima: 'Ket Silva',
-  },
-  {
-    id: '3',
-    title: 'Marcas de mordida em casos de abuso infantil',
-    dataDeRegistro: '14/01/2022',
-    responsavel: 'Dr Marcos Silva',
-    vitima: 'Alice',
-  },
-  {
-    id: '4',
-    title: 'Reconhecimento de cadáver no Ibura',
-    dataDeRegistro: '11/12/2024',
-    responsavel: 'Dr Marcos Silva',
-    vitima: 'João Gabriel',
-  },
-  {
-    id: '5',
-    title: 'Agressão doméstica',
-    dataDeRegistro: '11/12/2024',
-    responsavel: 'Dr Marcos Silva',
-    vitima: 'Rhuan',
-  },
-];
-
 export default function Casos() {
   interface Caso {
       id: string;
@@ -69,7 +30,7 @@ export default function Casos() {
   // executa fetchCasos() toda vez q a variável casos sofrer mudanças
   useEffect(() => {
     fetchCasos()
-  }, [casos])
+  }, [])
 
   return (
     <SafeAreaView style={styles.container}>

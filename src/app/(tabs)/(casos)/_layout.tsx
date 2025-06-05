@@ -9,7 +9,7 @@ export default function CasosLayout() {
       />
       <Stack.Screen
         name="caso/[id]"
-        options={{ headerShown: true }}
+        options={{ headerShown: false }}
       />
     </Stack>
   );
