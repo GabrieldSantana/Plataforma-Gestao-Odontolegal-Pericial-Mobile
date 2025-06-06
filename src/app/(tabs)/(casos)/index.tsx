@@ -41,6 +41,13 @@ export default function Casos() {
           value={searchQuery}
           mode="view"
         />
+        
+      </View>
+      <View style={styles.contentContainer}>
+        <Text variant="headlineMedium" style={styles.titulo}>
+          Visualização dos Casos
+        </Text>
+
         <Button
           style={styles.btnFiltrar}
           icon="filter"
@@ -49,11 +56,7 @@ export default function Casos() {
         >
           Filtrar
         </Button>
-      </View>
-      <View style={styles.contentContainer}>
-        <Text variant="headlineMedium" style={styles.titulo}>
-          Visualização dos Casos
-        </Text>
+
         <FlatList
           data={casos}
           renderItem={({ item }) => <CardCaso title={item.title} dateRegister={item.dataDeRegistro} vitima={item.vitima} responsavel={item.responsavel} casoRota={item.id}/>}
@@ -83,7 +86,9 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   btnFiltrar: {
+    marginLeft: 20,
     width: 100,
+    marginBottom: 12,
   },
   titulo: {
     textAlign: 'center',
