@@ -42,6 +42,14 @@
       "dataDeRegistro": "11/12/2024",
       "responsavel": "Dr Silva",
       "vitima": "Meiki"
+    },
+    {
+      "id": "8",
+      "title": "Agressão fisicas",
+      "dataDeRegistro": "11/12/2024",
+      "responsavel": "Dr Silva",
+      "vitima": "Meiki"
     }
+    
   ]
 }

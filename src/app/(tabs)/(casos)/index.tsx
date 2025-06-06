@@ -2,8 +2,9 @@ import { Link, router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { StyleSheet, FlatList, SafeAreaView, View, Alert } from 'react-native';
-import { Searchbar, Button, Text, FAB } from 'react-native-paper';
+import { Searchbar, Button, Text, FAB, ActivityIndicator } from 'react-native-paper';
 import { CardCaso } from '../../../components/CardCaso';
+
 
 export default function Casos() {
   interface Caso {
@@ -17,6 +18,7 @@ export default function Casos() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [casos, setCasos] = useState<Caso[]>([]);
+  const [refresh, setRefresh] = useState(false)
 
   async function fetchCasos(){
     try{
@@ -30,9 +32,15 @@ export default function Casos() {
   // executa fetchCasos() toda vez q a variável casos sofrer mudanças
   useEffect(() => {
     fetchCasos()
-  }, [])
+  }, [casos])
+
+  // if(casos.length === 0) {
+  //   Alert.alert('Tem nada');
+  //   console.log(casos)
+  // }
 
   return (
+
     <SafeAreaView style={styles.container}>
       <View style={styles.navbarContainer}>
         <Searchbar
@@ -54,18 +62,36 @@ export default function Casos() {
         <Text variant="headlineMedium" style={styles.titulo}>
           Visualização dos Casos
         </Text>
-        <FlatList
-          data={casos}
-          renderItem={({ item }) => <CardCaso title={item.title} dateRegister={item.dataDeRegistro} vitima={item.vitima} responsavel={item.responsavel} casoRota={item.id}/>}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.flatListContent}
-        />
+
+        
+           { !casos || casos.length === 0 ?
+            <View style={styles.carregando}>
+              <ActivityIndicator size={'large'} theme={{colors: {primary: '#1A4D77'}}} />
+              <Text variant='titleMedium' style={styles.textCarregando}>Carregando casos ...</Text>
+            </View>
+           : 
+            <FlatList
+              data={casos}
+              renderItem={({ item }) => <CardCaso title={item.title} dateRegister={item.dataDeRegistro} vitima={item.vitima} responsavel={item.responsavel} casoRota={item.id}/>}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.flatListContent}
+              refreshing={refresh}
+              onRefresh={() => {
+                setRefresh(true)
+                console.log('finalizou refresh')
+                fetchCasos()
+                console.log('finalizou')
+                setRefresh(false)
+              }}
+            />
+          }
+        
          <FAB
             icon="plus"
             style={styles.fab}
             label='Adicionar caso'
             color='white'
-            onPress={() => console.log('Botão de adicionar caso acionado')}
+            onPress={() => router.navigate("./AdicionarCaso")}
         />
       </View>
     </SafeAreaView>
@@ -104,4 +130,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: '#1A4D77',
   },
+
+  carregando: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 25,
+  },
+
+  textCarregando: {
+    color: 'darkblue'
+  }
 });
