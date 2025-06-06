@@ -49,6 +49,13 @@ export default function Casos() {
           value={searchQuery}
           mode="view"
         />
+        
+      </View>
+      <View style={styles.contentContainer}>
+        <Text variant="headlineMedium" style={styles.titulo}>
+          Visualização dos Casos
+        </Text>
+
         <Button
           style={styles.btnFiltrar}
           icon="filter"
@@ -57,34 +64,28 @@ export default function Casos() {
         >
           Filtrar
         </Button>
-      </View>
-      <View style={styles.contentContainer}>
-        <Text variant="headlineMedium" style={styles.titulo}>
-          Visualização dos Casos
-        </Text>
 
-        
-           { !casos || casos.length === 0 ?
-            <View style={styles.carregando}>
-              <ActivityIndicator size={'large'} theme={{colors: {primary: '#1A4D77'}}} />
-              <Text variant='titleMedium' style={styles.textCarregando}>Carregando casos ...</Text>
-            </View>
-           : 
-            <FlatList
-              data={casos}
-              renderItem={({ item }) => <CardCaso title={item.title} dateRegister={item.dataDeRegistro} vitima={item.vitima} responsavel={item.responsavel} casoRota={item.id}/>}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.flatListContent}
-              refreshing={refresh}
-              onRefresh={() => {
-                setRefresh(true)
-                console.log('finalizou refresh')
-                fetchCasos()
-                console.log('finalizou')
-                setRefresh(false)
-              }}
-            />
-          }
+         { !casos || casos.length === 0 ?
+          <View style={styles.carregando}>
+            <ActivityIndicator size={'large'} theme={{colors: {primary: '#1A4D77'}}} />
+            <Text variant='titleMedium' style={styles.textCarregando}>Carregando casos ...</Text>
+          </View>
+         : 
+          <FlatList
+            data={casos}
+            renderItem={({ item }) => <CardCaso title={item.title} dateRegister={item.dataDeRegistro} vitima={item.vitima} responsavel={item.responsavel} casoRota={item.id}/>}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.flatListContent}
+            refreshing={refresh}
+            onRefresh={() => {
+              setRefresh(true)
+              console.log('finalizou refresh')
+              fetchCasos()
+              console.log('finalizou')
+              setRefresh(false)
+            }}
+          />
+        }
         
          <FAB
             icon="plus"
@@ -109,7 +110,9 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   btnFiltrar: {
+    marginLeft: 20,
     width: 100,
+    marginBottom: 12,
   },
   titulo: {
     textAlign: 'center',
