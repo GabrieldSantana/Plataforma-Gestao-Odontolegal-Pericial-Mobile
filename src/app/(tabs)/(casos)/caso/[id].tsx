@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {StyleSheet, Text, View} from 'react-native'
-import { Appbar,  FAB, Portal, PaperProvider } from 'react-native-paper'
+import { Appbar,  FAB, Portal, PaperProvider, Menu, Divider } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function Caso(){
@@ -43,24 +43,56 @@ export default function Caso(){
 
     const { open } = state;
 
+    const [visible, setVisible] = useState(false);
+
+    const openMenu = () => setVisible(true);
+    const closeMenu = () => setVisible(false);
+
     return (
         <SafeAreaProvider>
-            <Appbar.Header mode='small'>
-                <Appbar.BackAction onPress={() => {router.back()}} />
-                <Appbar.Content title={caso?.title} titleMaxFontSizeMultiplier={1}/>
-            </Appbar.Header>
+            <PaperProvider>
+                <Appbar.Header mode="small">
+                    <Appbar.BackAction onPress={() => router.back()} />
+                    <Appbar.Content title={caso?.title} titleMaxFontSizeMultiplier={1} />
+                    <Menu
+                    style={{top: 20, zIndex: 1000}}
+                    visible={visible}
+                    elevation={3}
+                    onDismiss={closeMenu}
+                    anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
+                    >
+                    <Menu.Item onPress={() => { console.log('CLICOU NO BOTÃO GERAR RELATÓRIO'); closeMenu(); }} title="Gerar relatório" />
+                    <Menu.Item onPress={() => { console.log('CLICOU NO BOTÃO DE EDITAR CASO'); closeMenu(); }} title="Editar caso" />
+                    <Divider />
+                    </Menu>
+                </Appbar.Header>
+            </PaperProvider>
 
-            <Text>Caso {caso?.id}</Text>
-            <Text>Título: {caso?.title}</Text>
-            <Text>Data de Registro: {caso?.dataDeRegistro}</Text>
-            <Text>Responsável: {caso?.responsavel}</Text>
-            <Text>Vítima: {caso?.vitima}</Text>
-            <Text>Descricao: {caso?.descricao}</Text>
+            <View style={styles.casoInfoContainer}>
+                <Text style={styles.title}>{caso?.title}</Text>
+                {/* <Text style={styles.label}>Id:</Text>
+                <Text style={styles.value}>{caso?.id}</Text> */}
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline'}}>
+                    <View>
+                        <Text style={styles.label}>Data de Registro:</Text>
+                        <Text style={styles.value}>{caso?.dataDeRegistro}</Text>
+                        <Text style={styles.label}>Responsável:</Text>
+                        <Text style={styles.value}>{caso?.responsavel}</Text>
+                        <Text style={styles.label}>Vítima(s):</Text>
+                        <Text style={styles.value}>{caso?.vitima}</Text>
+                    </View>
+                    <View style={{backgroundColor: '#20639B', height: 30, paddingHorizontal: 20, paddingVertical: 5, borderRadius: 10}}>
+                        <Text style={styles.value && {color: 'white', fontWeight: 'bold'}}>Em andamento</Text>
+                    </View>
+                </View>
+                <Text style={styles.label}>Descrição:</Text>
+                <Text style={styles.description}>{caso?.descricao}</Text>
+            </View>
 
 
             <PaperProvider>
-      <Portal>
-        <FAB.Group
+                <Portal>
+                    <FAB.Group
                     open={open}
                     visible
                     color='white'
@@ -103,13 +135,42 @@ export default function Caso(){
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
         backgroundColor: 'white',
+        position: 'relative',
     },
     fab: {
         position: 'absolute',
         marginRight: 10,
         marginBottom: 10,
         backgroundColor: '#0000000',
+    },
+
+    casoInfoContainer: {
+        position: 'absolute',
+        top: 90,
+        paddingLeft: 35,
+        width: 345,
+        zIndex: -1,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#111E5F',
+        marginBottom: 12,
+        textAlign: 'left',
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 8,
+    },
+    value: {
+        fontSize: 16,
+        marginBottom: 8,
+    },
+    description: {
+        fontSize: 14,
+        marginTop: 8,
+        textAlign: 'justify',
     },
 })
