@@ -1,6 +1,9 @@
 {
   "name": "gestao-odontolegal-pericial-app",
   "version": "1.0.0",
+  "extra": {
+    "googleApiKey": "AIzaSyAt9Nwr7sGcluJUBhxbznRJ3opHLkFzopk"
+  },
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -9,22 +12,31 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-picker/picker": "^2.11.0",
     "@react-native-vector-icons/material-design-icons": "^12.0.0",
     "axios": "^1.9.0",
-    "expo": "~53.0.9",
+    "expo": "^53.0.10",
     "expo-constants": "~17.1.6",
+
+    "expo-image-picker": "~16.1.4",
+
     "expo-linking": "~7.1.5",
+    "expo-location": "~18.1.5",
     "expo-router": "~5.0.7",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.2",
+    "react-native": "^0.79.3",
+    "react-native-geocoding": "^0.5.0",
+    "react-native-maps": "1.20.1",
     "react-native-paper": "^5.14.5",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-screens": "^4.11.1"
+    "react-native-screens": "^4.11.1",
+    "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
+    "@types/react-native": "^0.72.8",
     "json-server": "^1.0.0-beta.3",
     "typescript": "~5.8.3"
   },

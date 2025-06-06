@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {StyleSheet, Text, View} from 'react-native'
-import { Appbar } from 'react-native-paper'
+import { Appbar, FAB } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function Caso(){
@@ -46,6 +46,15 @@ export default function Caso(){
             <Text>Responsável: {caso?.responsavel}</Text>
             <Text>Vítima: {caso?.vitima}</Text>
             <Text>Descricao: {caso?.descricao}</Text>
+
+            <FAB
+                icon="plus"
+                label='Adicionar evidência'
+                color='white'
+                style={styles.fab}
+                onPress={() => router.navigate('../AdicionarEvidencia')}
+                accessibilityLabel='Adicionar evidência'
+            />
         </SafeAreaProvider>
     )
 }
@@ -55,5 +64,12 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         backgroundColor: 'white',
+    },
+    fab: {
+        position: 'absolute',
+        margin: 16,
+        right: 10,
+        bottom: 10,
+        backgroundColor: '#1A4D77',
     },
 })

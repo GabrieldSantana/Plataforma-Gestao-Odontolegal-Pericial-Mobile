@@ -3,6 +3,9 @@
     "name": "gestao-odontolegal-pericial-app",
     "slug": "gestao-odontolegal-pericial-app",
     "version": "1.0.0",
+    "extra": {
+      "googleApiKey": "AIzaSyAt9Nwr7sGcluJUBhxbznRJ3opHLkFzopk"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,7 +24,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
