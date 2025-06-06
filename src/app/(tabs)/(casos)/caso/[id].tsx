@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {StyleSheet, Text, View} from 'react-native'
-import { Appbar, FAB } from 'react-native-paper'
+import { Appbar,  FAB, Portal, PaperProvider } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function Caso(){
@@ -33,6 +33,16 @@ export default function Caso(){
         fetchCaso()
     }, [])
 
+    interface State {
+        open: boolean;
+    }
+
+    const [state, setState] = useState<State>({ open: false });
+
+    const onStateChange = ({ open }: { open: boolean }) => setState({ open });
+
+    const { open } = state;
+
     return (
         <SafeAreaProvider>
             <Appbar.Header mode='small'>
@@ -47,14 +57,45 @@ export default function Caso(){
             <Text>Vítima: {caso?.vitima}</Text>
             <Text>Descricao: {caso?.descricao}</Text>
 
-            <FAB
-                icon="plus"
-                label='Adicionar evidência'
-                color='white'
-                style={styles.fab}
-                onPress={() => router.navigate('../AdicionarEvidencia')}
-                accessibilityLabel='Adicionar evidência'
-            />
+
+            <PaperProvider>
+      <Portal>
+        <FAB.Group
+                    open={open}
+                    visible
+                    color='white'
+                    fabStyle={{ backgroundColor: '#1A4D77' }}
+                    style={styles.fab}
+                    backdropColor='transparent'
+                    icon={open ? 'note' : 'plus'}
+                    actions={[
+                        {
+                        icon: 'pencil',
+                        label: 'Adicionar vítima',
+                        onPress: () => console.log('Botão adicionar vítima ativado'),
+                        style: { backgroundColor: '#1A4D77', },
+                        color: 'white',
+                        size: 'medium'
+                        },
+                        {
+                        icon: 'pen',
+                        label: 'Adicionar evidência',
+                        onPress: () => router.navigate('../AdicionarEvidencia'),
+                        style: { backgroundColor: '#1A4D77' },
+                        color: 'white',
+                        size: 'medium'
+                        },
+                        
+                    ]}
+                    onStateChange={onStateChange}
+                    onPress={() => {
+                        if (open) {
+                        // do something if the speed dial is open
+                        }
+                    }}
+                    />
+                </Portal>
+            </PaperProvider>
         </SafeAreaProvider>
     )
 }
@@ -67,9 +108,8 @@ const styles = StyleSheet.create({
     },
     fab: {
         position: 'absolute',
-        margin: 16,
-        right: 10,
-        bottom: 10,
-        backgroundColor: '#1A4D77',
+        marginRight: 10,
+        marginBottom: 10,
+        backgroundColor: '#0000000',
     },
 })
