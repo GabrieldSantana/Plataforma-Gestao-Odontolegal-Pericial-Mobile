@@ -48,6 +48,7 @@ export default function Casos() {
           onChangeText={setSearchQuery}
           value={searchQuery}
           mode="view"
+          style={{width: 335, height: 70,backgroundColor: 'transparent', margin: 'auto', borderRadius: 10}}
         />
         
       </View>
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   },
   titulo: {
     textAlign: 'center',
-    paddingVertical: 20,
+    paddingVertical: 15,
     color: '#111E5F',
     fontWeight: '700',
   },

@@ -28,7 +28,6 @@ export function CardCaso({title, dateRegister, responsavel, vitima, casoRota}: C
                     <View style={styles.cardMain}>
                         <Text variant="bodyMedium"><Text style={styles.textContentBold}>Data de registro:</Text> {dateRegister}</Text>
                         <Text variant="bodyMedium"><Text style={styles.textContentBold}>Responsável:</Text> {responsavel}</Text>
-                        <Text variant="bodyMedium"><Text style={styles.textContentBold}>Vítima:</Text> {vitima}</Text>
                     </View>
                 </Card.Content>
             </Card>
@@ -41,17 +40,21 @@ const styles = StyleSheet.create({
     cardTocavel: {
         paddingHorizontal: 10,
         paddingVertical: 7,
+        width: 355,
+        margin: 'auto',
+
     },
 
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        width: '100%',
     },
 
     cardTitle: {
         fontWeight: 'bold',
-        maxWidth: 220,
+        maxWidth: 200,
     },
 
     cardMain: {
