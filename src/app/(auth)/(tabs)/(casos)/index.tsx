@@ -14,12 +14,12 @@ export default function Casos() {
     responsavel: string;
     vitima: string;
     descricao?: string;
-    status: string,
+    status: string;
   }
-
 
   const [searchQuery, setSearchQuery] = useState('');
   const [casos, setCasos] = useState<Caso[]>([]);
+  const [filteredCasos, setFilteredCasos] = useState<Caso[]>([]);
   const [refresh, setRefresh] = useState(false);
 
   async function fetchCasos() {
@@ -46,16 +46,25 @@ export default function Casos() {
           year: 'numeric'
         }),
         responsavel: caso.peritoResponsavel?.nome ?? 'Desconhecido',
-        vitima: caso.vitima ?? '', // Se tiver esse campo no futuro
+        vitima: caso.vitima ?? '',
         descricao: caso.descricao ?? '',
         status: caso.status ?? 'Em andamento',
       }));
 
       setCasos(casosMapeados);
+      setFilteredCasos(casosMapeados); // Inicializa com todos os casos
     } catch (erro) {
       console.error('Erro ao buscar casos:', erro);
     }
   }
+
+  // Função de filtro por palavras
+  useEffect(() => {
+    const filtered = casos.filter(caso =>
+      caso.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCasos(filtered);
+  }, [searchQuery, casos]);
 
   useEffect(() => {
     fetchCasos();
@@ -69,7 +78,7 @@ export default function Casos() {
           onChangeText={setSearchQuery}
           value={searchQuery}
           mode="bar"
-          style={{width: 335, height: 70,backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
+          style={{width: 335, height: 70, backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
         />
       </View>
       <View style={styles.contentContainer}>
@@ -86,14 +95,20 @@ export default function Casos() {
           Filtrar
         </Button>
 
-        {!casos || casos.length === 0 ? (
+        {!filteredCasos || filteredCasos.length === 0 ? (
           <View style={styles.carregando}>
-            <ActivityIndicator size={'large'} theme={{ colors: { primary: '#1A4D77' } }} />
-            <Text variant='titleMedium' style={styles.textCarregando}>Carregando casos ...</Text>
+            {casos.length === 0 ? (
+              <>
+                <ActivityIndicator size={'large'} theme={{ colors: { primary: '#1A4D77' } }} />
+                <Text variant='titleMedium' style={styles.textCarregando}>Carregando casos ...</Text>
+              </>
+            ) : (
+              <Text variant='titleMedium' style={styles.textCarregando}>Nenhum caso encontrado</Text>
+            )}
           </View>
         ) : (
           <FlatList
-            data={casos}
+            data={filteredCasos}
             renderItem={({ item }) => (
               <CardCaso
                 title={item.title}
