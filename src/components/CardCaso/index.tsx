@@ -41,17 +41,20 @@ const styles = StyleSheet.create({
     cardTocavel: {
         paddingHorizontal: 10,
         paddingVertical: 7,
+        width: 355,
+        margin: 'auto',
     },
 
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        width: '100%',
     },
 
     cardTitle: {
         fontWeight: 'bold',
-        maxWidth: 220,
+        maxWidth: 200,
     },
 
     cardMain: {

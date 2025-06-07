@@ -48,6 +48,7 @@ export default function Casos() {
         responsavel: caso.peritoResponsavel?.nome ?? 'Desconhecido',
         vitima: caso.vitima ?? '', // Se tiver esse campo no futuro
         descricao: caso.descricao ?? '',
+        status: caso.status ?? 'Em andamento',
       }));
 
       setCasos(casosMapeados);
@@ -67,7 +68,8 @@ export default function Casos() {
           placeholder="Pesquise um caso"
           onChangeText={setSearchQuery}
           value={searchQuery}
-          mode="view"
+          mode="bar"
+          style={{width: 335, height: 70,backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
         />
       </View>
       <View style={styles.contentContainer}>
@@ -142,7 +144,7 @@ const styles = StyleSheet.create({
   },
   titulo: {
     textAlign: 'center',
-    paddingVertical: 20,
+    paddingVertical: 15,
     color: '#111E5F',
     fontWeight: '700',
   },

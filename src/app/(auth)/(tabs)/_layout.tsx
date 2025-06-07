@@ -7,7 +7,7 @@ export default function TabLayout() {
     <View style={{ flex: 1 }}>
       {/* Cabeçalho personalizado */}
       <View style={{ backgroundColor: '#111E5F', width: '100%', height: 60, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>GOV</Text>
+        <Text style={{ color: 'white', fontSize: 23, fontWeight: 'bold' }}>GOP</Text>
       </View>
       {/* Tabs */}
       <Tabs
