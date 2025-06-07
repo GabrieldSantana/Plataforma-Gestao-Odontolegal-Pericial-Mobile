@@ -14,6 +14,7 @@ export default function Casos() {
     responsavel: string;
     vitima: string;
     descricao?: string;
+    status: string,
   }
 
 
@@ -98,6 +99,7 @@ export default function Casos() {
                 vitima={item.vitima}
                 responsavel={item.responsavel}
                 casoRota={item.id}
+                status={item.status}
               />
             )}
             keyExtractor={(item) => item.id}

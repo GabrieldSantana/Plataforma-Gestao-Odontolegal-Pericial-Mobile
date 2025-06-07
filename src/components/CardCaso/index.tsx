@@ -8,9 +8,10 @@ interface CardProps {
     responsavel: string,
     vitima: string,
     casoRota: string,
+    status: string,
 }
 
-export function CardCaso({title, dateRegister, responsavel, vitima, casoRota}: CardProps){
+export function CardCaso({title, dateRegister, responsavel, status, casoRota}: CardProps){
 
     function entrarCaso(id: String){
         // console.log(`Entrou na rota ${id}`);
@@ -23,12 +24,11 @@ export function CardCaso({title, dateRegister, responsavel, vitima, casoRota}: C
                 <Card.Content>
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle} variant="titleMedium">{title}</Text>
-                        <View style={styles.status}><Text style={styles.statusText}>Em andamento</Text></View>
+                        <View style={styles.status}><Text style={styles.statusText}>{status}</Text></View>
                     </View>
                     <View style={styles.cardMain}>
                         <Text variant="bodyMedium"><Text style={styles.textContentBold}>Data de registro:</Text> {dateRegister}</Text>
                         <Text variant="bodyMedium"><Text style={styles.textContentBold}>Responsável:</Text> {responsavel}</Text>
-                        <Text variant="bodyMedium"><Text style={styles.textContentBold}>Vítima:</Text> {vitima}</Text>
                     </View>
                 </Card.Content>
             </Card>
