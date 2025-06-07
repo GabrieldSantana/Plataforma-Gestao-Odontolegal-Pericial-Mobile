@@ -20,8 +20,8 @@ export function CardCaso({title, dateRegister, responsavel, status, casoRota}: C
 
     return (
         <TouchableOpacity style={styles.cardTocavel} onPress={() => entrarCaso(casoRota)}>
-            <Card>
-                <Card.Content>
+            <Card mode='outlined'>
+                <Card.Content style={{backgroundColor: '#fff'}}>
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle} variant="titleMedium">{title}</Text>
                         <View style={styles.status}><Text style={styles.statusText}>{status}</Text></View>
