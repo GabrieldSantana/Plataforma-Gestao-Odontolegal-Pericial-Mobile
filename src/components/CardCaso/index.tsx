@@ -14,9 +14,19 @@ interface CardProps {
 export function CardCaso({title, dateRegister, responsavel, status, casoRota}: CardProps){
 
     function entrarCaso(id: String){
-        // console.log(`Entrou na rota ${id}`);
         router.navigate(`/caso/${id}`)
     }
+
+    // Mapeamento de cores para cada status
+    const statusColors: { [key: string]: string } = {
+        'Em andamento': '#20639B', // Azul escuro
+        'Finalizado': '#1A7730',   // Verde
+        'Arquivado': '#B22222',    // Vermelho
+        'default': '#757575',      // Cinza para status desconhecidos
+    };
+
+    // Seleciona a cor com base no status, com fallback para 'default'
+    const statusBackgroundColor = statusColors[status] || statusColors['default'];
 
     return (
         <TouchableOpacity style={styles.cardTocavel} onPress={() => entrarCaso(casoRota)}>
@@ -24,7 +34,9 @@ export function CardCaso({title, dateRegister, responsavel, status, casoRota}: C
                 <Card.Content style={{backgroundColor: '#fff'}}>
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle} variant="titleMedium">{title}</Text>
-                        <View style={styles.status}><Text style={styles.statusText}>{status}</Text></View>
+                        <View style={[styles.status, { backgroundColor: statusBackgroundColor }]}>
+                            <Text style={styles.statusText}>{status}</Text>
+                        </View>
                     </View>
                     <View style={styles.cardMain}>
                         <Text variant="bodyMedium"><Text style={styles.textContentBold}>Data de registro:</Text> {dateRegister}</Text>
@@ -62,7 +74,6 @@ const styles = StyleSheet.create({
     },
 
     status: {
-        backgroundColor: '#20639B',
         padding: 10,
         borderRadius: 5,
     },
