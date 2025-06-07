@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 
-import { globalStyles as styles } from '../../../styles/globalStyles';
+import { globalStyles as styles } from '../../../../styles/globalStyles';
 
 type Coordinates = {
   latitude: number;

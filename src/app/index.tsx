@@ -1,11 +1,38 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { use, useState } from 'react';
 import { TextInput, Text, View, Image, TouchableOpacity, StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Login() {
-  function logar(){
-    router.navigate("/(tabs)/(casos)");
-    console.log('login feito')
+  const [email , setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+
+  async function logar(){
+    try {
+      const resposta = await fetch('https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, senha }),
+      });
+
+      if (!resposta.ok) {
+        const erro = await resposta.json();
+        alert('EMAIL ou senha incorretos');
+        return;
+      }
+
+      const dados = await resposta.json();
+      console.log('Login bem sucedido:', dados );
+      await AsyncStorage.setItem('token', dados.token);
+      router.replace('/(auth)/(tabs)/(casos)');
+
+    } catch(err) {
+      console.error('Erro na requisição:', err);
+      alert('Erro de conexão. Verifique sua internet ou servidor.');
+    }
   }
 
   return (
@@ -21,13 +48,18 @@ export default function Login() {
           <Text style={styles.titulo}>Login</Text>
           <TextInput
             style={styles.input}
-            placeholder="CPF"
+            placeholder="EMAIL"
             placeholderTextColor="#00000066"
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput
             style={styles.input}
             placeholder="Senha"
             placeholderTextColor="#00000066"
+            value={senha}
+            secureTextEntry
+            onChangeText={setSenha}
           />
           <TouchableOpacity style={styles.button} onPress={logar}>
             <Text style={styles.textButton}>Login</Text>
