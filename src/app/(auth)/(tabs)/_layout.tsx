@@ -14,6 +14,18 @@ export default function TabLayout() {
         screenOptions={{
           tabBarActiveTintColor: 'blue',
           headerShown: false, // Oculta o cabeçalho padrão das abas
+          tabBarStyle: {
+            height: 70, // Ajuste a altura desejada da Tab Bar
+            paddingBottom: 10, // Ajuste para alinhar ícones e texto verticalmente
+            paddingTop: 5,
+          },
+          tabBarLabelStyle: {
+            fontSize: 12, // Ajuste o tamanho da fonte, se necessário
+            marginBottom: 5,
+          },
+          tabBarIconStyle: {
+            marginTop: 5, // Ajuste o espaçamento do ícone
+          },
         }}
       >
         <Tabs.Screen
