@@ -32,8 +32,6 @@ export default function Login() {
       const { senha: _, ...usuarioSemSenha } = dados.usuario || {};
       await AsyncStorage.setItem('usuario', JSON.stringify(usuarioSemSenha));
 
-      console.log('Usuário logado:', usuarioSemSenha);
-
       // Navegar para a tela principal
       router.replace('/(auth)/(tabs)/(casos)');
 
@@ -48,10 +46,10 @@ export default function Login() {
       <StatusBar backgroundColor="#F2F4FF" hidden={false} />
       <Image source={require('../../assets/logo-gop.png')} />
       <View style={styles.formulario}>
-        <Text style={styles.titulo}>Login</Text>
+        <Text style={styles.titulo}>Loginn</Text>
         <TextInput
           style={styles.input}
-          placeholder="EMAIL"
+          placeholder="Email"
           placeholderTextColor="#00000066"
           value={email}
           onChangeText={setEmail}
@@ -65,7 +63,7 @@ export default function Login() {
           onChangeText={setSenha}
         />
         <TouchableOpacity style={styles.button} onPress={logar}>
-          <Text style={styles.textButton}>Login</Text>
+          <Text style={styles.textButton}>Loginn</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
