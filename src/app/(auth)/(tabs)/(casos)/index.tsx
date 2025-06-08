@@ -37,7 +37,7 @@ export default function Casos() {
         },
       });
 
-      const casosMapeados: Caso[] = response.data.casos.map((caso: any) => ({
+      const casosMapeados: Caso[] = response.data.casos.reverse().map((caso: any) => ({
         id: caso._id,
         title: caso.nome,
         dataDeRegistro: new Date(caso.createdAt).toLocaleDateString('pt-BR', {
