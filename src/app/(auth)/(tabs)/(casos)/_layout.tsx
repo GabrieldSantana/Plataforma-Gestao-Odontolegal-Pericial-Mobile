@@ -21,6 +21,11 @@ export default function CasosLayout() {
         name="AdicionarEvidencia"
         options={{ headerShown: false }}
       />
+
+      <Stack.Screen
+        name="AdicionarVitima"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

@@ -175,7 +175,7 @@ export default function Caso() {
               {
                 icon: 'pencil',
                 label: 'Adicionar vítima',
-                onPress: () => console.log('Botão adicionar vítima ativado'),
+                onPress: () => router.navigate('../AdicionarVitima'),
                 style: { backgroundColor: '#1A4D77' },
                 color: 'white',
                 size: 'medium',
