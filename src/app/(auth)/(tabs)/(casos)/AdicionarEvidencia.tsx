@@ -18,6 +18,9 @@ import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 
+import { Appbar } from 'react-native-paper';
+import { router } from 'expo-router';
+
 import { globalStyles as styles } from '../../../../styles/globalStyles';
 
 type Coordinates = {
@@ -33,17 +36,14 @@ export default function CadastroEvidencia() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
 
-  // Inicialização do Geocoder no useEffect
   useEffect(() => {
     const apiKey = Constants.expoConfig?.extra?.googleApiKey;
-    console.log('API Key:', apiKey);
     if (!apiKey) {
-      console.error('Chave de API do Google não encontrada.');
       Alert.alert('Erro', 'Chave de API do Google não configurada corretamente.');
       return;
     }
-    Geocoder.init(apiKey); // Inicializa apenas se a chave existir
-  }, []); // Executa apenas uma vez ao montar o componente
+    Geocoder.init(apiKey);
+  }, []);
 
   const validarFormatoImagem = (uri: string): boolean => {
     const extensao = uri.split('.').pop()?.toLowerCase();
@@ -98,8 +98,7 @@ export default function CadastroEvidencia() {
       const { lat, lng } = json.results[0].geometry.location;
       setCoordinates({ latitude: lat, longitude: lng });
     } catch (error) {
-      console.warn('Erro ao buscar coordenadas:', error, 'AdicionarEvidencia.tsx');
-      Alert.alert('Erro', 'Não foi possível encontrar o local!!! erro na AdicionarEvidencia.tsx');
+      Alert.alert('Erro', 'Não foi possível encontrar o local.');
       setCoordinates(null);
     }
   };
@@ -135,70 +134,89 @@ export default function CadastroEvidencia() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>Cadastro de Evidência</Text>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <Appbar.Header
+        style={{
+          backgroundColor: 'white',
+          elevation: 0,           // Remove sombra Android
+          shadowOpacity: 0,       // Remove sombra iOS
+          paddingTop: 0,          // Remove padding extra iOS
+          height: 56,
+        }}
+        contentStyle={{
+          paddingTop: 0,          // Remove padding interno do conteúdo
+        }}
+      >
+        <Appbar.BackAction onPress={() => router.back()} color="#001F54" />
+        <Appbar.Content title="Cadastro de Evidência" titleStyle={{ color: '#001F54' }} />
+      </Appbar.Header>
 
-        <Input label="Título: *" value={titulo} onChangeText={setTitulo} placeholder="Insira o título da evidência" />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <Input label="Título: *" value={titulo} onChangeText={setTitulo} placeholder="Insira o título da evidência" />
 
-        <Input
-          label="Descrição: *"
-          value={descricao}
-          onChangeText={setDescricao}
-          placeholder="Insira a descrição da evidência"
-          multiline
-        />
+          <Input
+            label="Descrição: *"
+            value={descricao}
+            onChangeText={setDescricao}
+            placeholder="Insira a descrição da evidência"
+            multiline
+          />
 
-        <Text style={styles.label}>Categoria: *</Text>
-        <View style={styles.pickerContainer}>
-          <Picker selectedValue={categoria} onValueChange={setCategoria} style={styles.picker}>
-            <Picker.Item label="Selecione a categoria" value="" />
-            <Picker.Item label="Radiografia" value="radiografia" />
-            <Picker.Item label="Odontograma" value="odontograma" />
-            <Picker.Item label="Outro" value="outro" />
-          </Picker>
-        </View>
+          <Text style={styles.label}>Categoria: *</Text>
+          <View style={styles.pickerContainer}>
+            <Picker selectedValue={categoria} onValueChange={setCategoria} style={styles.picker}>
+              <Picker.Item label="Selecione a categoria" value="" />
+              <Picker.Item label="Radiografia" value="radiografia" />
+              <Picker.Item label="Odontograma" value="odontograma" />
+              <Picker.Item label="Outro" value="outro" />
+            </Picker>
+          </View>
 
-        <Text style={styles.label}>Anexo: (opcional)</Text>
-        <TouchableOpacity style={styles.uploadBox} onPress={handleUpload}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.uploadedImage} />
-          ) : (
-            <>
-              <Text style={styles.uploadText}>Você pode anexar uma imagem ou tirar uma foto</Text>
-              <Ionicons name="cloud-upload-outline" size={48} color="#333" />
-            </>
+          <Text style={styles.label}>Anexo: (opcional)</Text>
+          <TouchableOpacity style={styles.uploadBox} onPress={handleUpload}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.uploadedImage} />
+            ) : (
+              <>
+                <Text style={styles.uploadText}>Você pode anexar uma imagem ou tirar uma foto</Text>
+                <Ionicons name="cloud-upload-outline" size={48} color="#333" />
+              </>
+            )}
+          </TouchableOpacity>
+
+          <Input
+            label="Local: *"
+            value={local}
+            onChangeText={setLocal}
+            placeholder="Insira o local da evidência"
+            onEndEditing={buscarCoordenadas}
+          />
+
+          {coordinates && (
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                ...coordinates,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <Marker coordinate={coordinates} title="Local da Evidência" />
+            </MapView>
           )}
-        </TouchableOpacity>
 
-        <Input
-          label="Local: *"
-          value={local}
-          onChangeText={setLocal}
-          placeholder="Insira o local da evidência"
-          onEndEditing={buscarCoordenadas}
-        />
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Cadastrar Evidência</Text>
+          </TouchableOpacity>
 
-        {coordinates && (
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              ...coordinates,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker coordinate={coordinates} title="Local da Evidência" />
-          </MapView>
-        )}
-
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Cadastrar Evidência</Text>
-        </TouchableOpacity>
-
-        <StatusBar style="auto" />
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <StatusBar style="auto" />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

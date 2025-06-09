@@ -3,46 +3,105 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#fff',
+    paddingHorizontal: 12, // leve espaço lateral
   },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: 'white',
+  },
+  backButton: {
+    marginRight: 12,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#001F54',
+  },
+
+  label: {
+    marginTop: 16,
+    marginBottom: 8,
+    marginLeft: 12,
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  input: {
+    marginHorizontal: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    fontSize: 16,
+    color: '#000',
+    backgroundColor: '#fff',
+  },
+
+  multilineInput: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+
+  disabledInput: {
+    backgroundColor: '#eee',
+    color: '#888',
+  },
+
+  picker: {
+    marginHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    marginBottom: 10,
+  },
+
+  dateButton: {
+    marginHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+
+  submitButton: {
+    marginTop: 24,
+    marginHorizontal: 12,
+    backgroundColor: '#001F54',
+    paddingVertical: 14,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+
   title: {
     fontSize: 20,
     marginBottom: 10,
-  },
-  label: {
-    marginBottom: 5,
-    fontWeight: 'bold',
-  },
-  input: {
-    borderWidth: 1,
-    marginBottom: 10,
-    padding: 8,
-    borderRadius: 4,
-  },
-  multilineInput: {
-    minHeight: 60,
-  },
-  picker: {
-    borderWidth: 1,
-    marginBottom: 10,
-    borderRadius: 4,
-  },
-  dateButton: {
-    borderWidth: 1,
-    marginBottom: 10,
-    padding: 12,
-    borderRadius: 4,
   },
   victimContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
+    marginHorizontal: 12,
     marginBottom: 10,
     paddingHorizontal: 10,
     paddingVertical: 12,
     borderRadius: 4,
-    backgroundColor: '#fff', 
+    backgroundColor: '#fff',
   },
   victimText: {
     flex: 1,
@@ -59,23 +118,14 @@ export default StyleSheet.create({
     borderColor: '#007bff',
     padding: 12,
     borderRadius: 4,
+    marginHorizontal: 12,
     marginBottom: 20,
     alignItems: 'center',
   },
   fileText: {
     color: '#007bff',
   },
-  submitButton: {
-    backgroundColor: '#001F54',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  submitText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+
   modalContainer: {
     flex: 1,
     padding: 20,
@@ -122,8 +172,5 @@ export default StyleSheet.create({
   modalButtonText: {
     color: 'white',
     textAlign: 'center',
-  },
-  disabledInput: {
-    backgroundColor: '#eee',
   },
 });
