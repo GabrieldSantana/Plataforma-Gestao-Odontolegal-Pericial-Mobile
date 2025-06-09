@@ -1,14 +1,30 @@
 import { Portal, Text, Modal, Button } from "react-native-paper";
-import { StyleSheet, View, ViewStyle, Image, ActivityIndicator } from "react-native";
+import { StyleSheet, View, ViewStyle, Image, ActivityIndicator, ScrollView } from "react-native";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useLocalSearchParams } from 'expo-router';
 
 interface Evidencia {
   id?: number;
   titulo?: string;
   descricao?: string;
   imageUrl?: string;
+}
+
+interface Vitima {
+  NIC?: string;
+  nome?: string;
+  genero?: 'masculino' | 'feminino';
+  idade?: number;
+  cpf?: string;
+  endereco?: string;
+  etnia?: string;
+  anotacaoAnatomica?: string;
+  odontograma: {
+    superiorEsquerdo?: string[];
+    superiorDireito?: string[];
+    inferiorEsquerdo?: string[];
+    inferiorDireito?: string[];
+  };
 }
 
 interface ModalProps {
@@ -21,6 +37,7 @@ interface ModalProps {
 
 export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo }: ModalProps) {
   const [evidencia, setEvidencia] = useState<Evidencia | null>(null);
+  const [vitima, setVitima] = useState<Vitima | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const id = caminho
@@ -34,28 +51,44 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo 
     borderRadius: 8,
   };
 
-  const fetchEvidencia = async () => {
+  const fetchDadosModal = async () => {
 
     // aqui busca as informações de uma evidência 
-    const apiUrl = `http://192.168.1.62:3000/evidencias/${id}`
-    
-    try {
-      setLoading(true);
-      const response = await axios.get(apiUrl);
-      setEvidencia(response.data);
-      console.log(response.data)
-      setError(null);
-    } catch (err) {
-      setError('Failed to fetch evidencia');
-      console.error(err);
-    } finally {
-      setLoading(false);
+    if (tipo == 'Evidencia'){
+      const apiUrl = `http://192.168.1.62:3000/evidencias/${id}`
+  
+      try {
+        setLoading(true);
+        const response = await axios.get(apiUrl);
+        setEvidencia(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch evidencia');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      const apiUrl = `http://192.168.1.62:3000/vitimas/${id}`
+  
+      try {
+        setLoading(true);
+        const response = await axios.get(apiUrl);
+        setVitima(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch evidencia');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
+
   };
 
   useEffect(() => {
     if (visibleModal) {
-      fetchEvidencia();
+      fetchDadosModal();
     }
   }, [visibleModal]);
 
@@ -66,6 +99,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo 
         onDismiss={hideModal}
         contentContainerStyle={containerStyle}
       >
+        {tipo == "Evidencia" ? 
         <View style={styles.container}>
           <View style={styles.btnSair}>
             <Button 
@@ -97,7 +131,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo 
           ) : error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
-              <Button onPress={fetchEvidencia}>Tentar novamente</Button>
+              <Button onPress={fetchDadosModal}>Tentar novamente</Button>
             </View>
           ) : (
             <View>
@@ -142,6 +176,87 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo 
             </Button>
           </View>
         </View>
+        :
+
+        <View style={styles.containerVitima}>
+          <View style={styles.btnSair}>
+            <Button 
+              icon="close" 
+              onPress={hideModal}
+              textColor="#1A4D77"
+            >
+              Sair
+            </Button>
+          </View>
+          <View style={styles.header}>
+            <Text variant="headlineMedium" style={styles.headerText}>{tipo}</Text>
+            <Button 
+              icon="clipboard-list" 
+              mode="contained"
+              style={{borderRadius: 6, marginTop: 10}}
+              buttonColor="#1A4D77"
+              onPress={() => console.log('Botão gerar laudo pressionado')}
+            >
+              Gerar Laudo
+            </Button>
+          </View>
+
+          <ScrollView>
+              <Text variant="headlineSmall" style={styles.title}>NIC:</Text>
+              <Text style={styles.text}>{vitima?.NIC || 'Sem NIC'}</Text>
+              <Text variant="headlineSmall" style={styles.title}>Nome:</Text>
+              <Text style={styles.text}>{vitima?.nome || 'Sem nome'}</Text>
+              <Text variant="headlineSmall" style={styles.title}>CPF:</Text>
+              <Text style={styles.text}>{vitima?.cpf || 'Sem cpf'}</Text>
+              <Text variant="headlineSmall" style={styles.title}>Endereço:</Text>
+              <Text style={styles.text}>{vitima?.endereco || 'Sem endereço'}</Text>
+              <Text variant="headlineSmall" style={styles.title}>Etnia:</Text>
+              <Text style={styles.text}>{vitima?.etnia || 'Sem etnia'}</Text>
+              <Text variant="headlineSmall" style={styles.title}>Descrição anatômica:</Text>
+              <Text style={styles.text}>{vitima?.anotacaoAnatomica || 'Sem etnia'}</Text>
+              
+              <Text variant="headlineSmall" style={styles.title}>Odontograma:</Text>
+
+              <Text variant="bodyLarge" style={styles.title}>Superior Direito:</Text>
+              <Text style={styles.text}>{vitima?.odontograma.superiorDireito || 'Sem etnia'}</Text>
+
+              <Text variant="bodyLarge" style={styles.title}>Superior Esquerdo:</Text>
+              <Text style={styles.text}>{vitima?.odontograma.superiorEsquerdo || 'Sem etnia'}</Text>
+
+              <Text variant="bodyLarge" style={styles.title}>Inferior Direito:</Text>
+              <Text style={styles.text}>{vitima?.odontograma.inferiorDireito || 'Sem etnia'}</Text>
+
+              <Text variant="bodyLarge" style={styles.title}>Inferior Esquerdo:</Text>
+              <Text style={styles.text}>{vitima?.odontograma.inferiorEsquerdo || 'Sem etnia'}</Text>
+              
+            </ScrollView>
+
+          <View style={styles.botoes}>
+            <Button 
+              icon="pencil" 
+              mode="contained" 
+              style={styles.botao}
+              buttonColor="#1A4D77"
+              contentStyle={{flexDirection: 'row-reverse'}}
+              onPress={() => console.log('Botão editar evidência pressionado')}
+            >
+              Editar
+            </Button>
+
+            <Button 
+              icon="trash-can" 
+              mode="contained" 
+              style={styles.botao}
+              buttonColor="#C51B1B"
+              contentStyle={{flexDirection: 'row-reverse'}}
+              onPress={() => console.log('Botão excluir evidência pressionado')}
+            >
+              Excluir
+            </Button>
+          </View>
+        </View>
+      
+      }
       </Modal>
     </Portal>
   );
@@ -151,6 +266,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+  containerVitima: {
+    flex: 1,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+
   btnSair: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

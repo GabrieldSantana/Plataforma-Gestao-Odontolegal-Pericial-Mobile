@@ -84,72 +84,87 @@
     {
       "id": "1",
       "NIC": "V001",
-      "Nome": "Ana Silva",
-      "Genero": "Feminino",
-      "Idade": 34,
-      "Documento": "123.456.789-00",
-      "Endereco": "Rua das Flores, 123, Centro, São Paulo, SP",
-      "CorEtnia": "Parda",
-      "Odontograma": {
-        "anotacao": "Dente 21 com restauração em resina, ausência do dente 36"
+      "nome": "Ana Silva",
+      "genero": "Feminino",
+      "idade": 34,
+      "cpf": "123.456.789-00",
+      "endereco": "Rua das Flores, 123, Centro, São Paulo, SP",
+      "etnia": "Parda",
+      "odontograma": {
+        "superiorEsquerdo": ["Dente 21 com restauração em resina"],
+        "superiorDireito": [],
+        "inferiorEsquerdo": ["Ausência do dente 36"],
+        "inferiorDireito": []
       },
-      "AnotacaoRegioesAnatomicas": "Cicatriz na região frontal esquerda, fratura no antebraço direito"
+      "anotacaoAnatomica": "Cicatriz na região frontal esquerda, fratura no antebraço direito"
     },
     {
       "id": "2",
       "NIC": "V002",
-      "Nome": "João Pereira",
-      "Genero": "Masculino",
-      "Idade": 45,
-      "Documento": "987.654.321-00",
-      "Endereco": "Av. Brasil, 456, Jardim América, Rio de Janeiro, RJ",
-      "CorEtnia": "Branca",
-      "Odontograma": {
-        "anotacao": "Dente 11 com coroa metálica, dente 47 ausente"
+      "nome": "João Pereira",
+      "genero": "Masculino",
+      "idade": 45,
+      "cpf": "987.654.321-00",
+      "endereco": "Av. Brasil, 456, Jardim América, Rio de Janeiro, RJ",
+      "etnia": "Branca",
+      "odontograma": {
+        "superiorEsquerdo": [],
+        "superiorDireito": ["Dente 11 com coroa metálica"],
+        "inferiorEsquerdo": [],
+        "inferiorDireito": ["Dente 47 ausente"]
       },
-      "AnotacaoRegioesAnatomicas": "Hematoma na região torácica, lesão na perna esquerda"
+      "anotacaoAnatomica": "Hematoma na região torácica, lesão na perna esquerda"
     },
     {
       "id": "3",
       "NIC": "V003",
-      "Nome": "Maria Oliveira",
-      "Genero": "Feminino",
-      "Idade": 28,
-      "Documento": "456.789.123-00",
-      "Endereco": "Rua do Sol, 789, Bela Vista, Belo Horizonte, MG",
-      "CorEtnia": "Negra",
-      "Odontograma": {
-        "anotacao": "Dente 31 com cárie, extração do dente 46"
+      "nome": "Maria Oliveira",
+      "genero": "Feminino",
+      "idade": 28,
+      "cpf": "456.789.123-00",
+      "endereco": "Rua do Sol, 789, Bela Vista, Belo Horizonte, MG",
+      "etnia": "Negra",
+      "odontograma": {
+        "superiorEsquerdo": [],
+        "superiorDireito": [],
+        "inferiorEsquerdo": ["Dente 31 com cárie"],
+        "inferiorDireito": ["Extração do dente 46"]
       },
-      "AnotacaoRegioesAnatomicas": "Equimose no ombro direito, arranhões na mão esquerda"
+      "anotacaoAnatomica": "Equimose no ombro direito, arranhões na mão esquerda"
     },
     {
       "id": "4",
       "NIC": "V004",
-      "Nome": "Carlos Santos",
-      "Genero": "Masculino",
-      "Idade": 19,
-      "Documento": "321.654.987-00",
-      "Endereco": "Travessa da Paz, 101, Vila Nova, Salvador, BA",
-      "CorEtnia": "Indígena",
-      "Odontograma": {
-        "anotacao": "Dentes intactos, sem restaurações ou ausências"
+      "nome": "Carlos Santos",
+      "genero": "Masculino",
+      "idade": 19,
+      "cpf": "321.654.987-00",
+      "endereco": "Travessa da Paz, 101, Vila Nova, Salvador, BA",
+      "etnia": "Indígena",
+      "odontograma": {
+        "superiorEsquerdo": ["Dentes intactos"],
+        "superiorDireito": ["Sem restaurações"],
+        "inferiorEsquerdo": ["Sem ausências"],
+        "inferiorDireito": []
       },
-      "AnotacaoRegioesAnatomicas": "Laceração na região cervical, contusão no joelho direito"
+      "anotacaoAnatomica": "Laceração na região cervical, contusão no joelho direito"
     },
     {
       "id": "5",
       "NIC": "V005",
-      "Nome": "Fernanda Costa",
-      "Genero": "Feminino",
-      "Idade": 52,
-      "Documento": "654.321.987-00",
-      "Endereco": "Rua das Árvores, 202, Boa Viagem, Recife, PE",
-      "CorEtnia": "Branca",
-      "Odontograma": {
-        "anotacao": "Prótese parcial superior, ausência dos dentes 26 e 27"
+      "nome": "Fernanda Costa",
+      "genero": "Feminino",
+      "idade": 52,
+      "cpf": "654.321.987-00",
+      "endereco": "Rua das Árvores, 202, Boa Viagem, Recife, PE",
+      "etnia": "Branca",
+      "odontograma": {
+        "superiorEsquerdo": ["Prótese parcial superior"],
+        "superiorDireito": ["Ausência do dente 26"],
+        "inferiorEsquerdo": [],
+        "inferiorDireito": ["Ausência do dente 27"]
       },
-      "AnotacaoRegioesAnatomicas": "Fratura na costela esquerda, hematoma na coxa direita"
+      "anotacaoAnatomica": "Fratura na costela esquerda, hematoma na coxa direita"
     }
   ]
 }

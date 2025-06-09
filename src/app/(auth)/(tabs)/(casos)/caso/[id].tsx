@@ -38,7 +38,7 @@ export default function Caso() {
   interface Vitima {
     id: string
     NIC: string;
-    Nome: string;
+    nome: string;
     Genero: 'Feminino' | 'Masculino';
     Idade: number;
     Documento: string;
@@ -257,7 +257,7 @@ export default function Caso() {
                   vitimas.map((vitima) => (
                     <CardEvidencia
                       key={vitima.id}
-                      nome={vitima.Nome}
+                      nome={vitima.nome}
                       abrirModal={mostrarModal}
                       updateIdModel={() => guardarIdModal(vitima.id)}
                       updateTipo = {() => setTipo("Vitima")}

@@ -10,7 +10,13 @@ interface PropsCardEvidencia{
   updateTipo: () => void
 }
 
-const CardEvidencia = ({nome, abrirModal, updateIdModel}: PropsCardEvidencia) => {
+
+const CardEvidencia = ({nome, abrirModal, updateIdModel, updateTipo}: PropsCardEvidencia) => {
+
+  function updateCard(){
+    updateIdModel()
+    updateTipo()
+  }
 
   return (
     <PaperProvider>
@@ -18,7 +24,7 @@ const CardEvidencia = ({nome, abrirModal, updateIdModel}: PropsCardEvidencia) =>
         <View style={styles.container}>
           <Icon name="image" size={24} color="#000" style={styles.icon} />
           <Text style={styles.text}>{nome}</Text>
-          <TouchableOpacity style={styles.menuIcon} onPress={abrirModal} onPressIn={updateIdModel}>
+          <TouchableOpacity style={styles.menuIcon} onPress={abrirModal} onPressIn={updateCard}>
             <Icon name="more-vert" size={24} color="#111E5F" />
           </TouchableOpacity>
         </View>
