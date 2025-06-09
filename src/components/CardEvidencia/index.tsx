@@ -3,61 +3,28 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
 import { Portal, Modal, PaperProvider, Button } from 'react-native-paper';
 
-const CardEvidencia = () => {
-  const [visible, setVisible] = useState(false);
+interface PropsCardEvidencia{
+  nome: string,
+  abrirModal: () => void
+  updateIdModel: () => void
+  updateTipo: () => void
+}
 
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+const CardEvidencia = ({nome, abrirModal, updateIdModel}: PropsCardEvidencia) => {
 
   return (
     <PaperProvider>
-      <View style={styles.container}>
-        <Icon name="image" size={24} color="#000" style={styles.icon} />
-        <Text style={styles.text}>Imagens do local</Text>
-        <TouchableOpacity style={styles.menuIcon} onPress={showModal}>
-          <Icon name="more-vert" size={24} color="#111E5F" />
-        </TouchableOpacity>
-      </View>
+      
+        <View style={styles.container}>
+          <Icon name="image" size={24} color="#000" style={styles.icon} />
+          <Text style={styles.text}>{nome}</Text>
+          <TouchableOpacity style={styles.menuIcon} onPress={abrirModal} onPressIn={updateIdModel}>
+            <Icon name="more-vert" size={24} color="#111E5F" />
+          </TouchableOpacity>
+        </View>
+      
 
-      <Portal>
-        <Modal
-          visible={visible}
-          onDismiss={hideModal}
-          contentContainerStyle={styles.modalContainer}
-        >
-          <View style={styles.modalTitleContainer}>
-              <Text style={styles.modalTitle}>Opções de Imagens do Local</Text>
-          </View>
-          <Button
-            mode="text"
-            onPress={() => {
-              console.log('Clicou em Visualizar');
-              hideModal();
-            }}
-            style={styles.modalButton}
-          >
-            Visualizar
-          </Button>
-          <Button
-            mode="text"
-            onPress={() => {
-              console.log('Clicou em Excluir');
-              hideModal();
-            }}
-            style={styles.modalButton}
-            textColor="#FF0000"
-          >
-            Excluir
-          </Button>
-          <Button
-            mode="text"
-            onPress={hideModal}
-            style={styles.modalButton}
-          >
-            Fechar
-          </Button>
-        </Modal>
-      </Portal>
+      
     </PaperProvider>
   );
 };
