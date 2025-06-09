@@ -42,6 +42,15 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <FontAwesome size={28} name="bar-chart" color={color} />,
           }}
         />
+
+          <Tabs.Screen
+            name="(adm)"
+            options={{
+              title: 'Admnistrar',
+              tabBarIcon: ({ color }) => <FontAwesome size={28} name="users" color={color} />,
+            }}
+          />
+          
         <Tabs.Screen
           name="Perfil"
           options={{
@@ -49,6 +58,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <FontAwesome size={28} name="user" color={color} />,
           }}
         />
+
       </Tabs>
     </View>
   );
