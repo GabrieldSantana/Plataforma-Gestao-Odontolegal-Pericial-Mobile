@@ -10,6 +10,8 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';   // <-- import router do expo-router
+import { Ionicons } from '@expo/vector-icons'; // ícone seta voltar
 import styles from '../../../../styles/CadastroNovoCaso.styles';
 
 const CadastroNovoCaso = () => {
@@ -19,13 +21,12 @@ const CadastroNovoCaso = () => {
     dataHora: new Date(),
     descricao: '',
     tipo: '',
-    peritoResponsavel: '', // apenas ID aqui
+    peritoResponsavel: '',
   });
 
   const [showPicker, setShowPicker] = useState(false);
   const [modePicker, setModePicker] = useState<'date' | 'time'>('date');
 
-  // Pega o perito do AsyncStorage
   useEffect(() => {
     const carregarPerito = async () => {
       try {
@@ -98,32 +99,34 @@ const CadastroNovoCaso = () => {
         return;
       }
 
-      const response = await fetch('https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nome,
-          local,
-          dataHora: dataHora.toISOString(),
-          descricao: caso.descricao,
-          tipo,
-          peritoResponsavel,
-        }),
-      });
+      const response = await fetch(
+        'https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nome,
+            local,
+            dataHora: dataHora.toISOString(),
+            descricao: caso.descricao,
+            tipo,
+            peritoResponsavel,
+          }),
+        }
+      );
 
       if (response.ok) {
         Alert.alert('Sucesso', 'Caso cadastrado com sucesso!');
-        // limpa formulário
         setCaso({
           nome: '',
           local: '',
           dataHora: new Date(),
           descricao: '',
           tipo: '',
-          peritoResponsavel,
+          peritoResponsavel: '',
         });
       } else {
         const erro = await response.json();
@@ -137,9 +140,19 @@ const CadastroNovoCaso = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        <Text style={styles.title}>Cadastro de Novo Caso</Text>
+      {/* Header com botão de voltar alinhado com o título */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#001F54" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Cadastro de Novo Caso</Text>
+      </View>
 
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         <Text style={styles.label}>Nome do Caso *</Text>
         <TextInput
           style={styles.input}
@@ -157,9 +170,22 @@ const CadastroNovoCaso = () => {
         />
 
         <Text style={styles.label}>Data e Hora *</Text>
-        <TouchableOpacity style={styles.dateButton} onPress={() => showMode('date')}>
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => showMode('date')}
+          activeOpacity={0.7}
+        >
           <Text>{caso.dataHora.toLocaleString()}</Text>
         </TouchableOpacity>
+
+        {showPicker && (
+          <DateTimePicker
+            value={caso.dataHora}
+            mode={modePicker}
+            display="default"
+            onChange={onChangeDateTime}
+          />
+        )}
 
         <Text style={styles.label}>Descrição</Text>
         <TextInput
@@ -197,7 +223,11 @@ const CadastroNovoCaso = () => {
           editable={false}
         />
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit}
+          activeOpacity={0.7}
+        >
           <Text style={styles.submitText}>Salvar Caso</Text>
         </TouchableOpacity>
       </ScrollView>

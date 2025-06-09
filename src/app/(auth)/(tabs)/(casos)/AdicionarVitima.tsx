@@ -1,160 +1,222 @@
-import { View } from "react-native";
-import { Text } from "react-native-paper";
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+} from 'react-native';
 
-export default function AdicionarVitima(){
-    return (
-        <View>
-            <Text>Adicionar vitima tela, modifique a tela aqui Ket</Text>
-            <Text>Arquivo (casos)/AdicionarVitima.tsx</Text>
-        </View>
-    )
+import { Appbar } from 'react-native-paper';
+import { router } from 'expo-router';
+
+import style from '../../../../styles/vitima.styles';
+
+interface Odontograma {
+  superiorEsquerdo: string[];
+  superiorDireito: string[];
+  inferiorEsquerdo: string[];
+  inferiorDireito: string[];
 }
 
+interface Vitima {
+  cin: string;
+  nome: string;
+  genero?: string;
+  idade?: string;
+  documento?: string;
+  endereco?: string;
+  cor?: string;
+  odontograma: Odontograma;
+  anotacoesOdontograma?: string;
+}
 
-{/* <Text style={styles.label}>Vítima *</Text>
-        <TouchableOpacity style={styles.victimContainer} onPress={() => setModalVisible(true)}>
-          {caso.vitima ? (
-            <Text style={styles.victimTextActive}>{caso.vitima.nome}</Text>
-          ) : (
-            <Text style={styles.victimText}>Clique para adicionar vítima</Text>
-          )}
-          <Feather name="user-plus" size={20} color="#007bff" />
-        </TouchableOpacity>
+const vitimaInicial: Vitima = {
+  cin: '',
+  nome: '',
+  odontograma: {
+    superiorEsquerdo: [''],
+    superiorDireito: [''],
+    inferiorEsquerdo: [''],
+    inferiorDireito: [''],
+  },
+  genero: '',
+  idade: '',
+  documento: '',
+  endereco: '',
+  cor: '',
+  anotacoesOdontograma: '',
+};
 
-        <TouchableOpacity style={styles.fileButton} onPress={handleFilePicker}>
-          <Text style={styles.fileText}>
-            {caso.anexos ? getFileName(caso.anexos) : 'Anexar arquivos (opcional)'}
-          </Text>
-        </TouchableOpacity> */}
+const regioes: { chave: keyof Odontograma; label: string }[] = [
+  { chave: 'superiorEsquerdo', label: 'Superior Esquerdo' },
+  { chave: 'superiorDireito', label: 'Superior Direito' },
+  { chave: 'inferiorEsquerdo', label: 'Inferior Esquerdo' },
+  { chave: 'inferiorDireito', label: 'Inferior Direito' },
+];
 
+const CadastrarVitima = () => {
+  const [vitima, setVitima] = useState<Vitima>(vitimaInicial);
 
+  const atualizarCampo = (campo: keyof Vitima, valor: string) => {
+    setVitima((prev) => ({ ...prev, [campo]: valor }));
+  };
 
-/* 
-      <Modal visible={modalVisible} animationType="slide">
-        <ScrollView style={styles.modalContainer}>
-          <Text style={styles.title}>Cadastrar Vítima</Text>
+  const atualizarDente = (regiao: keyof Odontograma, index: number, valor: string) => {
+    const novaRegiao = [...vitima.odontograma[regiao]];
+    novaRegiao[index] = valor;
+    setVitima((prev) => ({
+      ...prev,
+      odontograma: {
+        ...prev.odontograma,
+        [regiao]: novaRegiao,
+      },
+    }));
+  };
 
-          <Text style={styles.label}>CIN *</Text>
+  const adicionarDente = (regiao: keyof Odontograma) => {
+    setVitima((prev) => ({
+      ...prev,
+      odontograma: {
+        ...prev.odontograma,
+        [regiao]: [...prev.odontograma[regiao], ''],
+      },
+    }));
+  };
+
+  const removerDente = (regiao: keyof Odontograma, index: number) => {
+    setVitima((prev) => ({
+      ...prev,
+      odontograma: {
+        ...prev.odontograma,
+        [regiao]: prev.odontograma[regiao].filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  const salvar = () => {
+    if (!vitima.cin || !vitima.nome) {
+      Alert.alert('Erro', 'CIN e Nome são obrigatórios.');
+      return;
+    }
+
+    const jsonVitima = JSON.stringify(vitima, null, 2);
+    console.log('✅ Vítima cadastrada:', jsonVitima);
+    Alert.alert('Sucesso', 'Vítima cadastrada com sucesso!');
+
+    setVitima(vitimaInicial);
+  };
+
+  return (
+    <>
+      <SafeAreaView style={{ backgroundColor: 'white' }}>
+        <Appbar.Header style={{ backgroundColor: 'white', elevation: 4 }}>
+          <Appbar.BackAction onPress={() => router.back()} color="#001F54" />
+          <Appbar.Content title="Cadastro de Vítima" titleStyle={{ color: '#001F54' }} />
+        </Appbar.Header>
+      </SafeAreaView>
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView
+          style={style.container}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 50 }}
+        >
+          {/* Campos do formulário */}
+          <Text style={style.label}>CIN*</Text>
           <TextInput
-            style={styles.input}
+            style={style.input}
             value={vitima.cin}
-            onChangeText={(text) => handleVitimaChange('cin', text)}
-            placeholder="Número CIN"
+            onChangeText={(t) => atualizarCampo('cin', t)}
           />
 
-          <Text style={styles.label}>Nome *</Text>
+          <Text style={style.label}>Nome*</Text>
           <TextInput
-            style={styles.input}
+            style={style.input}
             value={vitima.nome}
-            onChangeText={(text) => handleVitimaChange('nome', text)}
-            placeholder="Nome da vítima"
+            onChangeText={(t) => atualizarCampo('nome', t)}
           />
 
-          <Text style={styles.label}>Gênero</Text>
+          <Text style={style.label}>Gênero</Text>
           <TextInput
-            style={styles.input}
+            style={style.input}
             value={vitima.genero}
-            onChangeText={(text) => handleVitimaChange('genero', text)}
-            placeholder="Gênero"
+            onChangeText={(t) => atualizarCampo('genero', t)}
           />
 
-          <Text style={styles.label}>Idade</Text>
+          <Text style={style.label}>Idade</Text>
           <TextInput
-            style={styles.input}
-            value={vitima.idade}
-            onChangeText={(text) => handleVitimaChange('idade', text)}
-            placeholder="Idade"
+            style={style.input}
             keyboardType="numeric"
+            value={vitima.idade}
+            onChangeText={(t) => atualizarCampo('idade', t)}
           />
 
-          <Text style={styles.label}>Documento</Text>
+          <Text style={style.label}>Documento</Text>
           <TextInput
-            style={styles.input}
+            style={style.input}
             value={vitima.documento}
-            onChangeText={(text) => handleVitimaChange('documento', text)}
-            placeholder="Documento de identificação"
+            onChangeText={(t) => atualizarCampo('documento', t)}
           />
 
-          <Text style={styles.label}>Endereço</Text>
+          <Text style={style.label}>Endereço</Text>
           <TextInput
-            style={styles.input}
+            style={style.input}
             value={vitima.endereco}
-            onChangeText={(text) => handleVitimaChange('endereco', text)}
-            placeholder="Endereço"
+            onChangeText={(t) => atualizarCampo('endereco', t)}
           />
 
-          <Text style={styles.label}>Cor</Text>
+          <Text style={style.label}>Cor</Text>
           <TextInput
-            style={styles.input}
+            style={style.input}
             value={vitima.cor}
-            onChangeText={(text) => handleVitimaChange('cor', text)}
-            placeholder="Cor"
+            onChangeText={(t) => atualizarCampo('cor', t)}
           />
 
-          <Text style={styles.label}>Odontograma</Text>
-          {regioes.map((regiao) => (
-            <View key={regiao} style={styles.odontogramaRegion}>
-              <Text style={styles.odontogramaTitle}>{nomesRegioes[regiao]}</Text>
-              {vitima.odontograma[regiao].map((item, index) => (
-                <View key={index} style={styles.odontogramaItemContainer}>
+          {regioes.map(({ chave, label }) => (
+            <View key={chave} style={style.regiaoContainer}>
+              <Text style={style.label}>{label}</Text>
+              {vitima.odontograma[chave].map((valor, i) => (
+                <View key={i} style={style.denteRow}>
                   <TextInput
-                    style={styles.odontogramaInput}
-                    value={item}
-                    onChangeText={(text) => handleOdontogramaChange(regiao, index, text)}
-                    placeholder="Detalhe"
+                    style={[style.input, { flex: 1 }]}
+                    value={valor}
+                    onChangeText={(t) => atualizarDente(chave, i, t)}
                   />
-                  <TouchableOpacity
-                    onPress={() => removeOdontogramaItem(regiao, index)}
-                    disabled={vitima.odontograma[regiao].length === 1}
-                    style={{ marginLeft: 5 }}
-                  >
-                    <Feather
-                      name="trash-2"
-                      size={20}
-                      color={vitima.odontograma[regiao].length === 1 ? '#ccc' : 'red'}
-                    />
+                  <TouchableOpacity onPress={() => removerDente(chave, i)}>
+                    <Text style={style.remover}>Remover</Text>
                   </TouchableOpacity>
                 </View>
               ))}
-              <TouchableOpacity onPress={() => addOdontogramaItem(regiao)}>
-                <Text style={styles.addOdontogramaText}>+ Adicionar</Text>
+              <TouchableOpacity onPress={() => adicionarDente(chave)}>
+                <Text style={style.adicionar}>+ Adicionar</Text>
               </TouchableOpacity>
             </View>
           ))}
 
-          <Text style={styles.label}>Anotações do Odontograma</Text>
+          <Text style={style.label}>Anotações do Odontograma</Text>
           <TextInput
-            style={[styles.input, styles.multilineInput]}
-            value={vitima.anotacoesOdontograma}
-            onChangeText={(text) => handleVitimaChange('anotacoesOdontograma', text)}
+            style={[style.input, { height: 100, marginBottom: 20 }]}
             multiline
+            value={vitima.anotacoesOdontograma}
+            onChangeText={(t) => atualizarCampo('anotacoesOdontograma', t)}
           />
 
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={[styles.submitButton, { backgroundColor: '#001F54' }]}
-              onPress={addVitimaToCaso}
-            >
-              <Text style={styles.submitText}>Salvar Vítima</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.submitButton, { backgroundColor: '#001F54' }]}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.submitText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={[style.btn, style.saveBtn]} onPress={salvar}>
+            <Text style={style.btnText}>Cadastrar Vítima</Text>
+          </TouchableOpacity>
         </ScrollView>
-      </Modal>
+      </KeyboardAvoidingView>
+    </>
+  );
+};
 
-      {showPicker && (
-        <DateTimePicker
-          value={caso.dataHora}
-          mode={modePicker}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={onChangeDateTime}
-        />
-      )} */
-
-
-
+export default CadastrarVitima;
