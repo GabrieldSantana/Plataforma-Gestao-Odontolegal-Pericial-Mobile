@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from '../../../../src/styles/perfil.styles'
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 interface PerfilProps {
