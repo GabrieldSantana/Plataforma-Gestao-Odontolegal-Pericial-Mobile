@@ -163,7 +163,16 @@ const CadastrarVitima = () => {
   return (
     <>
       <SafeAreaView style={{ backgroundColor: 'white' }}>
-        <Appbar.Header style={{ backgroundColor: 'white', elevation: 4 }}>
+        <Appbar.Header style={{
+          backgroundColor: 'transparent',
+          elevation: 0,           // Remove sombra Android
+          shadowOpacity: 0,       // Remove sombra iOS
+          marginTop: -30,          // Remove padding extra iOS
+          marginBottom: 0,
+          height: 50,
+          justifyContent: 'flex-start',
+          alignItems: 'center'
+        }}>
           <Appbar.BackAction onPress={() => router.back()} color="#001F54" />
           <Appbar.Content title="Cadastro de Vítima" titleStyle={{ color: '#001F54' }} />
         </Appbar.Header>

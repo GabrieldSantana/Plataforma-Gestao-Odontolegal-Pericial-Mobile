@@ -233,38 +233,8 @@ export default function Caso() {
               <Text style={styles.label}>Vítimas</Text>
               <View style={{ paddingTop: 10 }}>
                 {vitimas.length > 0 ? (
-                  vitimas.map((vitima, index) => (
-                    // <View
-                    //   key={vitima._id}
-                    //   style={{
-                    //     marginBottom: 24,
-                    //     padding: 16,
-                    //     backgroundColor: '#f9f9f9',
-                    //     borderRadius: 10,
-                    //     borderWidth: 1,
-                    //     borderColor: '#ddd',
-                    //   }}
-                    // >
-                    //   <Text style={[ styles.label, { fontSize: 18, marginBottom: 8 }]}>
-                    //     Vítima {index + 1}
-                    //   </Text>
-                    //   <Text style={styles.label}>Nome:</Text>
-                    //   <Text style={styles.value}>{vitima.nome}</Text>
-                    //   <Text style={styles.label}>NIC:</Text>
-                    //   <Text style={styles.value}>{vitima.NIC}</Text>
-                    //   <Text style={styles.label}>Gênero:</Text>
-                    //   <Text style={styles.value}>{vitima.genero}</Text>
-                    //   <Text style={styles.label}>Idade:</Text>
-                    //   <Text style={styles.value}>{vitima.idade}</Text>
-                    //   <Text style={styles.label}>CPF:</Text>
-                    //   <Text style={styles.value}>{vitima.cpf}</Text>
-                    //   <Text style={styles.label}>Endereço:</Text>
-                    //   <Text style={styles.value}>{vitima.endereco}</Text>
-                    //   <Text style={styles.label}>Etnia:</Text>
-                    //   <Text style={styles.value}>{vitima.etnia}</Text>
-                    //   <Text style={styles.label}>Anotação de Anatomia:</Text>
-                    //   <Text style={styles.value}>{vitima.anotacaoAnatomia}</Text>
-                    // </View>
+                  vitimas.map((vitima) => (
+                    
                     <CardEvidencia
                       key={vitima._id}
                       nome={vitima.nome}

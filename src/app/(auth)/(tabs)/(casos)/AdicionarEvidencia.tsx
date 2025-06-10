@@ -137,15 +137,16 @@ export default function CadastroEvidencia() {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <Appbar.Header
         style={{
-          backgroundColor: 'white',
+          backgroundColor: 'transparent',
           elevation: 0,           // Remove sombra Android
           shadowOpacity: 0,       // Remove sombra iOS
-          paddingTop: 0,          // Remove padding extra iOS
-          height: 56,
+          marginTop: -30,          // Remove padding extra iOS
+          marginBottom: -10,
+          height: 50,
+          justifyContent: 'flex-start',
+          alignItems: 'center'
         }}
-        contentStyle={{
-          paddingTop: 0,          // Remove padding interno do conteúdo
-        }}
+        
       >
         <Appbar.BackAction onPress={() => router.back()} color="#001F54" />
         <Appbar.Content title="Cadastro de Evidência" titleStyle={{ color: '#001F54' }} />
