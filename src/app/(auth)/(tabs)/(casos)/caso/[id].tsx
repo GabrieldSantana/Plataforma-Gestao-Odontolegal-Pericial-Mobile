@@ -1,4 +1,3 @@
-// ... imports permanecem iguais ...
 import { router, useLocalSearchParams } from 'expo-router';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -36,11 +35,6 @@ export default function Caso() {
     imageUrl: string;
   }
 
-  interface PropsCardEvidencia {
-    updateIdModel: (id: string | number) => void;
-    updateTipo: string;
-    // Outras props...
-  }
   interface Vitima {
     _id: string;
     NIC: string;
@@ -54,30 +48,31 @@ export default function Caso() {
     anotacaoAnatomia: string;
   }
 
+  interface PropsCardEvidencia {
+    nome: string;
+    abrirModal: () => void;
+    updateIdModel: (id: string) => void;
+    updateTipo: (tipo: string) => void;
+  }
 
   const { id } = useLocalSearchParams();
   const [caso, setCaso] = useState<Caso | null>(null);
-  const [carregando, setCarregando] = useState(true);
   const [state, setState] = useState<State>({ open: false });
-  const [visible, setVisible] = useState(false);
-  const [vitimas, setVitimas] = useState<Vitima[] | null>(null);
-  const [refreshing, setRefreshing] = useState(false); // Estado para recarregamento
-
-  const onStateChange = ({ open }: { open: boolean }) => setState({ open });
-  const { open } = state;
-
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
-
+  const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
+  const [vitimas, setVitimas] = useState<Vitima[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [visibleMenu, setVisibleMenu] = useState(false);
   const [visibleModal, setVisibleModal] = useState(false);
+  const [idModal, setIdModal] = useState('');
+  const [tipo, setTipo] = useState('Evidencia');
+
+  const openMenu = () => setVisibleMenu(true);
+  const closeMenu = () => setVisibleMenu(false);
   const mostrarModal = () => setVisibleModal(true);
   const fecharModal = () => setVisibleModal(false);
 
-  const [idModal, setIdModal] = useState('');
-
-  const guardarIdModal = (id: string) => setIdModal(id);
-
-  const [tipo, setTipo] = useState("Evidencia");
+  const onStateChange = ({ open }: { open: boolean }) => setState({ open });
 
   async function fetchCaso() {
     try {
@@ -86,16 +81,40 @@ export default function Caso() {
         console.error('Token não encontrado');
         return;
       }
-      
       const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setCaso(response.data);
     } catch (erro: any) {
       console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
     } finally {
       setCarregando(false);
+    }
+  }
+
+  // async function fetchEvidencias() {
+  //   try {
+  //     const token = await AsyncStorage.getItem('token');
+  //     if (!token) {
+  //       console.error('Token não encontrado');
+  //       return;
+  //     }
+  //     const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias?casoId=${id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     setEvidencias(response.data.evidencias || []);
+  //     console.log(evidencias)
+  //   } catch (erro: any) {
+  //     console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
+  //   }
+  // }
+  async function fetchEvidencias() {
+    try {
+      const apiUrl = `http://192.168.1.62:3000/evidencias/`;
+      const response = await axios.get(apiUrl);
+      setEvidencias(response.data);
+    } catch (erro: any) {
+      console.error('Erro ao buscar evidencias:', erro.response?.data || erro.message);
     }
   }
 
@@ -106,42 +125,30 @@ export default function Caso() {
         console.error('Token não encontrado');
         return;
       }
-
-      const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas?casoId=${id}`;
-      const response = await axios.get(apiUrl, {
+      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas?casoId=${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      setVitimas(response.data.vitimas);
+      setVitimas(response.data.vitimas || []);
     } catch (erro: any) {
       console.error('Erro ao buscar vítimas:', erro.response?.data || erro.message);
-
     }
   }
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchEvidencias(), fetchVitimas()]);
+    await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
     setRefreshing(false);
   };
 
   useEffect(() => {
     AsyncStorage.setItem('casoId', id as string);
     fetchCaso();
-  }, []);
-
-  useEffect(() => {
     fetchEvidencias();
     fetchVitimas();
     return () => {
       AsyncStorage.removeItem('casoId');
     };
-  }, []);
-
-
-  useEffect(() => {
-    guardarIdModal(idModal);
-  }, [idModal]);
+  }, [id]);
 
   if (carregando || !caso) {
     return (
@@ -167,9 +174,7 @@ export default function Caso() {
           <Appbar.BackAction onPress={() => router.back()} />
           <Appbar.Content title={caso.nome} />
           <Menu
-            style={{ top: 20, zIndex: 1000 }}
-            visible={visible}
-            elevation={3}
+            visible={visibleMenu}
             onDismiss={closeMenu}
             anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
           >
@@ -186,112 +191,92 @@ export default function Caso() {
         >
           <View style={styles.casoInfoContainer}>
             <Text style={styles.title} variant="headlineSmall">{caso.nome}</Text>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <View>
-                <Text style={styles.label}>Status:</Text>
-                <Text style={styles.value}>{caso.status}</Text>
-                <Text style={styles.label}>Local:</Text>
-                <Text style={styles.value}>{caso.local}</Text>
-                <Text style={styles.label}>Tipo:</Text>
-                <Text style={styles.value}>{caso.tipo}</Text>
-                <Text style={styles.label}>Data e Hora:</Text>
-                <Text style={styles.value}>
-                  {caso.dataHora ? new Date(caso.dataHora).toLocaleString() : 'N/A'}
-                </Text>
-                <Text style={styles.label}>Perito Responsável:</Text>
-                <Text style={styles.value}>
-                  {caso.peritoResponsavel.nome} ({caso.peritoResponsavel.email})
-                </Text>
-              </View>
+            <View>
+              <Text style={styles.label}>Status:</Text>
+              <Text style={styles.value}>{caso.status}</Text>
+              <Text style={styles.label}>Local:</Text>
+              <Text style={styles.value}>{caso.local}</Text>
+              <Text style={styles.label}>Tipo:</Text>
+              <Text style={styles.value}>{caso.tipo}</Text>
+              <Text style={styles.label}>Data e Hora:</Text>
+              <Text style={styles.value}>
+                {caso.dataHora ? new Date(caso.dataHora).toLocaleString() : 'N/A'}
+              </Text>
+              <Text style={styles.label}>Perito Responsável:</Text>
+              <Text style={styles.value}>
+                {caso.peritoResponsavel.nome} ({caso.peritoResponsavel.email})
+              </Text>
             </View>
-
             <Text style={styles.label}>Descrição:</Text>
             <Text style={styles.description}>{caso.descricao}</Text>
 
             <View style={{ marginTop: 16 }}>
               <Text style={styles.label}>Evidências</Text>
               <View style={{ paddingTop: 10 }}>
-
-                {[1, 2].map((_, index) => (
-                  <CardEvidencia
-                    key={index}
-                    nome={`Evidência visual ${index + 1}`}
-                    abrirModal={mostrarModal}
-                    updateIdModel={() => guardarIdModal(`fake-id-${index}`)}
-                    updateTipo={() => setTipo("Evidencia")}
-                  />
-                ))}
-
-              </View>
-            </View>
-            <View style={{ marginTop: 16 }}>
-              <Text style={styles.label}>Vítimas</Text>
-              <View style={{ paddingTop: 10 }}>
-                {vitimas && vitimas.length > 0 ? (
-                vitimas.map((vitima, index) => (
-                  <View
-                    key={vitima._id}
-                    style={{
-                      marginBottom: 24,
-                      padding: 16,
-                      backgroundColor: '#f9f9f9',
-                      borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: '#ddd',
-                    }}
-                  >
-                    <Text style={[styles.label, { fontSize: 18, marginBottom: 8 }]}>
-                      Vítima {index + 1}
-                    </Text>
-
-                    <Text style={styles.label}>Nome:</Text>
-                    <Text style={styles.value}>{vitima.nome}</Text>
-
-                    <Text style={styles.label}>NIC:</Text>
-                    <Text style={styles.value}>{vitima.NIC}</Text>
-
-                    <Text style={styles.label}>Gênero:</Text>
-                    <Text style={styles.value}>{vitima.genero}</Text>
-
-                    <Text style={styles.label}>Idade:</Text>
-                    <Text style={styles.value}>{vitima.idade}</Text>
-
-                    <Text style={styles.label}>CPF:</Text>
-                    <Text style={styles.value}>{vitima.cpf}</Text>
-
-                    <Text style={styles.label}>Endereço:</Text>
-                    <Text style={styles.value}>{vitima.endereco}</Text>
-
-                    <Text style={styles.label}>Etnia:</Text>
-                    <Text style={styles.value}>{vitima.etnia}</Text>
-
-                    <Text style={styles.label}>Anotação de Anatomia:</Text>
-                    <Text style={styles.value}>{vitima.anotacaoAnatomia}</Text>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.value}>Nenhuma vítima disponível</Text>
-              )}
-
-
-            <View style={{ marginTop: 16 }}>
-              <Text style={styles.label}>Vítimas</Text>
-              <View style={{ paddingTop: 10 }}>
-                {vitimas ? (
-                  vitimas.map((vitima) => (
+                {evidencias.length > 0 ? (
+                  evidencias.map((evidencia) => (
                     <CardEvidencia
-                      key={vitima.id}
-                      nome={vitima.nome}
+                      key={evidencia.id}
+                      nome={evidencia.titulo}
                       abrirModal={mostrarModal}
-                      updateIdModel={() => guardarIdModal(vitima.id)}
-                      updateTipo={() => setTipo("Vitima")}
+                      updateIdModel={() => setIdModal(evidencia.id)}
+                      updateTipo={() => setTipo('Evidencia')}
                     />
                   ))
                 ) : (
-                  <Text>Nenhuma evidência disponível</Text>
+                  <Text style={styles.value}>Nenhuma evidência disponível</Text>
                 )}
+              </View>
+            </View>
 
+            <View style={{ marginTop: 16 }}>
+              <Text style={styles.label}>Vítimas</Text>
+              <View style={{ paddingTop: 10 }}>
+                {vitimas.length > 0 ? (
+                  vitimas.map((vitima, index) => (
+                    // <View
+                    //   key={vitima._id}
+                    //   style={{
+                    //     marginBottom: 24,
+                    //     padding: 16,
+                    //     backgroundColor: '#f9f9f9',
+                    //     borderRadius: 10,
+                    //     borderWidth: 1,
+                    //     borderColor: '#ddd',
+                    //   }}
+                    // >
+                    //   <Text style={[ styles.label, { fontSize: 18, marginBottom: 8 }]}>
+                    //     Vítima {index + 1}
+                    //   </Text>
+                    //   <Text style={styles.label}>Nome:</Text>
+                    //   <Text style={styles.value}>{vitima.nome}</Text>
+                    //   <Text style={styles.label}>NIC:</Text>
+                    //   <Text style={styles.value}>{vitima.NIC}</Text>
+                    //   <Text style={styles.label}>Gênero:</Text>
+                    //   <Text style={styles.value}>{vitima.genero}</Text>
+                    //   <Text style={styles.label}>Idade:</Text>
+                    //   <Text style={styles.value}>{vitima.idade}</Text>
+                    //   <Text style={styles.label}>CPF:</Text>
+                    //   <Text style={styles.value}>{vitima.cpf}</Text>
+                    //   <Text style={styles.label}>Endereço:</Text>
+                    //   <Text style={styles.value}>{vitima.endereco}</Text>
+                    //   <Text style={styles.label}>Etnia:</Text>
+                    //   <Text style={styles.value}>{vitima.etnia}</Text>
+                    //   <Text style={styles.label}>Anotação de Anatomia:</Text>
+                    //   <Text style={styles.value}>{vitima.anotacaoAnatomia}</Text>
+                    // </View>
+                    <CardEvidencia
+                      key={vitima._id}
+                      nome={vitima.nome}
+                      abrirModal={mostrarModal}
+                      updateIdModel={() => setIdModal(vitima._id)}
+                      updateTipo={() => setTipo('Vitima')}
+                    />
+
+                  ))
+                ) : (
+                  <Text style={styles.value}>Nenhuma vítima disponível</Text>
+                )}
               </View>
             </View>
           </View>
@@ -299,13 +284,13 @@ export default function Caso() {
 
         <Portal>
           <FAB.Group
-            open={open}
+            open={state.open}
             visible
             color="white"
             fabStyle={{ backgroundColor: '#1A4D77' }}
             style={styles.fab}
             backdropColor="rgba(255, 255, 255, 0.9)"
-            icon={open ? 'note' : 'plus'}
+            icon={state.open ? 'note' : 'plus'}
             actions={[
               {
                 icon: 'pencil',

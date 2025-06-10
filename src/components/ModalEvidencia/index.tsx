@@ -1,7 +1,8 @@
 import { Portal, Text, Modal, Button } from "react-native-paper";
-import { StyleSheet, View, ViewStyle, Image, ActivityIndicator, ScrollView, Alert} from "react-native";
+import { StyleSheet, View, ViewStyle, Image, ActivityIndicator, ScrollView, Alert } from "react-native";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EditarModal } from "../EditarModal";
 
 interface Evidencia {
@@ -11,21 +12,27 @@ interface Evidencia {
   imageUrl?: string;
 }
 
+interface Odontograma {
+  superiorEsquerdo: string[];
+  superiorDireito: string[];
+  inferiorEsquerdo: string[];
+  inferiorDireito: string[];
+}
+
 interface Vitima {
-  NIC?: string;
-  nome?: string;
-  genero?: 'masculino' | 'feminino';
-  idade?: number;
-  cpf?: string;
-  endereco?: string;
-  etnia?: string;
-  anotacaoAnatomica?: string;
-  odontograma: {
-    superiorEsquerdo?: string[];
-    superiorDireito?: string[];
-    inferiorEsquerdo?: string[];
-    inferiorDireito?: string[];
-  };
+  odontograma?: Odontograma; // Made odontograma optional
+  _id: string;
+  casoId: string;
+  nome: string;
+  genero: string;
+  idade: number;
+  cpf: string;
+  endereco: string;
+  etnia: string;
+  anotacaoAnatomica: string;
+  createdAt: string;
+  NIC: string;
+  __v: number;
 }
 
 interface ModalProps {
@@ -48,13 +55,15 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
   const containerStyle: ViewStyle = {
     backgroundColor: 'white',
     paddingHorizontal: 20,
-    height: 530,
+    height: 560,
     width: 350,
     marginHorizontal: 'auto',
     borderRadius: 8,
   };
 
   const fetchDadosModal = async () => {
+    const token = await AsyncStorage.getItem('token');
+
     if (tipo === 'Evidencia') {
       const apiUrl = `http://192.168.1.62:3000/evidencias/${id}`;
       try {
@@ -69,11 +78,14 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
         setLoading(false);
       }
     } else {
-      const apiUrl = `http://192.168.1.62:3000/vitimas/${id}`;
+      const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas/${id}`;
       try {
         setLoading(true);
-        const response = await axios.get(apiUrl);
-        setVitima(response.data);
+        const response = await axios.get(apiUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('API Response for vitima:', JSON.stringify(response.data, null, 2)); // Debug log
+        setVitima(response.data.vitima || response.data); // Handle nested vitima
         setError(null);
       } catch (err) {
         setError('Failed to fetch vitima');
@@ -85,6 +97,8 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
   };
 
   const deleteArquivo = async () => {
+    const token = await AsyncStorage.getItem('token');
+
     Alert.alert(
       'Confirmação',
       `Tem certeza que deseja excluir este ${tipo?.toLowerCase()}?`,
@@ -114,10 +128,14 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                 setLoading(false);
               }
             } else {
-              const apiUrl = `http://192.168.1.62:3000/vitimas/${id}`;
+              const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas/${id}`;
               try {
                 setLoading(true);
-                await axios.delete(apiUrl);
+                await axios.delete(apiUrl, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  }
+                });
                 console.log('Vítima deletada:', vitima);
                 setVitima(null);
                 setError(null);
@@ -193,7 +211,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                 <Button onPress={fetchDadosModal}>Tentar novamente</Button>
               </View>
             ) : (
-              <View>
+              <ScrollView>
                 <Text variant="headlineSmall" style={styles.title}>Título:</Text>
                 <Text style={styles.text}>{evidencia?.titulo || 'Sem título'}</Text>
                 <Text variant="headlineSmall" style={styles.title}>Descrição:</Text>
@@ -208,19 +226,19 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                 ) : (
                   <Text>Esta evidência não tem imagem</Text>
                 )}
-              </View>
+              </ScrollView>
             )}
 
             <View style={styles.botoes}>
               <Button 
-                icon="pencil" 
+                icon={editarHabilitado ? 'menu-left-outline' : 'pencil'} 
                 mode="contained" 
                 style={styles.botao}
-                buttonColor="#1A4D77"
+                buttonColor={editarHabilitado ? '#4c7aa0' : '#1A4D77'}
                 contentStyle={{ flexDirection: 'row-reverse' }}
                 onPress={toggleEditar}
               >
-                {editarHabilitado ? 'Salvar' : 'Editar'}
+                {editarHabilitado ? 'Voltar' : 'Editar'}
               </Button>
 
               <Button 
@@ -251,43 +269,89 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
 
             {editarHabilitado ? (
               <EditarModal idEditarModal={id} conteudo={vitima} />
-            ) : (
-              <ScrollView>
-                <Text variant="headlineSmall" style={styles.title}>NIC:</Text>
-                <Text style={styles.text}>{vitima?.NIC || 'Sem NIC'}</Text>
-                <Text variant="headlineSmall" style={styles.title}>Nome:</Text>
-                <Text style={styles.text}>{vitima?.nome || 'Sem nome'}</Text>
-                <Text variant="headlineSmall" style={styles.title}>CPF:</Text>
-                <Text style={styles.text}>{vitima?.cpf || 'Sem cpf'}</Text>
-                <Text variant="headlineSmall" style={styles.title}>Endereço:</Text>
-                <Text style={styles.text}>{vitima?.endereco || 'Sem endereço'}</Text>
-                <Text variant="headlineSmall" style={styles.title}>Etnia:</Text>
-                <Text style={styles.text}>{vitima?.etnia || 'Sem etnia'}</Text>
-                <Text variant="headlineSmall" style={styles.title}>Descrição anatômica:</Text>
-                <Text style={styles.text}>{vitima?.anotacaoAnatomica || 'Sem descrição'}</Text>
-                
-                <Text variant="headlineSmall" style={styles.title}>Odontograma:</Text>
-                <Text variant="bodyLarge" style={styles.title}>Superior Direito:</Text>
-                <Text style={styles.text}>{vitima?.odontograma.superiorDireito?.join(', ') || '(Sem dados)'}</Text>
-                <Text variant="bodyLarge" style={styles.title}>Superior Esquerdo:</Text>
-                <Text style={styles.text}>{vitima?.odontograma.superiorEsquerdo?.join(', ') || '(Sem dados)'}</Text>
-                <Text variant="bodyLarge" style={styles.title}>Inferior Direito:</Text>
-                <Text style={styles.text}>{vitima?.odontograma.inferiorDireito?.join(', ') || '(Sem dados)'}</Text>
-                <Text variant="bodyLarge" style={styles.title}>Inferior Esquerdo:</Text>
-                <Text style={styles.text}>{vitima?.odontograma.inferiorEsquerdo?.join(', ') || '(Sem dados)'}</Text>
-              </ScrollView>
-            )}
+            ) : 
+            
+            (
+            <ScrollView>
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#1A4D77" />
+                </View>
+              ) : error ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                  <Button onPress={fetchDadosModal}>Tentar novamente</Button>
+                </View>
+              ) : vitima ? (
+                <>
+                  <Text variant="headlineSmall" style={styles.title}>NIC:</Text>
+                  <Text style={styles.text}>{vitima.NIC || 'Sem NIC'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Nome:</Text>
+                  <Text style={styles.text}>{vitima.nome || 'Sem nome'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Gênero:</Text>
+                  <Text style={styles.text}>{vitima.genero || 'Sem gênero'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Idade:</Text>
+                  <Text style={styles.text}>{vitima.idade || 'Sem idade'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>CPF:</Text>
+                  <Text style={styles.text}>{vitima.cpf || 'Sem CPF'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Endereço:</Text>
+                  <Text style={styles.text}>{vitima.endereco || 'Sem endereço'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Etnia:</Text>
+                  <Text style={styles.text}>{vitima.etnia || 'Sem etnia'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Anotação Anatômica:</Text>
+                  <Text style={styles.text}>{vitima.anotacaoAnatomica || 'Sem anotação'}</Text>
+
+                  <Text variant="headlineSmall" style={styles.title}>Odontograma:</Text>
+                  {vitima.odontograma ? (
+                    <>
+                      <Text style={styles.text}>
+                        Superior Esquerdo: {vitima.odontograma.superiorEsquerdo?.join(', ') || 'Nenhum'}
+                      </Text>
+                      <Text style={styles.text}>
+                        Superior Direito: {vitima.odontograma.superiorDireito?.join(', ') || 'Nenhum'}
+                      </Text>
+                      <Text style={styles.text}>
+                        Inferior Esquerdo: {vitima.odontograma.inferiorEsquerdo?.join(', ') || 'Nenhum'}
+                      </Text>
+                      <Text style={styles.text}>
+                        Inferior Direito: {vitima.odontograma.inferiorDireito?.join(', ') || 'Nenhum'}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={styles.text}>Nenhum odontograma disponível</Text>
+                  )}
+
+                  <Text variant="headlineSmall" style={styles.title}>Data de Criação:</Text>
+                  <Text style={styles.text}>
+                    {new Date(vitima.createdAt).toLocaleDateString('pt-BR') || 'Sem data'}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.text}>Nenhuma informação de vítima disponível</Text>
+              )}
+            </ScrollView>
+            )
+
+            }
+
 
             <View style={styles.botoes}>
               <Button 
-                icon="pencil" 
+                icon={editarHabilitado ? 'menu-left-outline' : 'pencil'} 
                 mode="contained" 
                 style={styles.botao}
-                buttonColor="#1A4D77"
+                buttonColor={editarHabilitado ? '#4c7aa0' : '#1A4D77'}
                 contentStyle={{ flexDirection: 'row-reverse' }}
                 onPress={toggleEditar}
               >
-                {editarHabilitado ? 'Salvar' : 'Editar'}
+                {editarHabilitado ? 'Voltar' : 'Editar'}
               </Button>
 
               <Button 
@@ -312,6 +376,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingBottom: 5,
   },
   containerVitima: {
     flex: 1,

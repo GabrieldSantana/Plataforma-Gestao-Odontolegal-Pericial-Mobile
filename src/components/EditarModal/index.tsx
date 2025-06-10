@@ -1,6 +1,7 @@
 import { Text, TextInput, Button } from "react-native-paper";
 import { View, StyleSheet, Alert, ScrollView } from "react-native";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from "react";
 
 interface Evidencia {
@@ -10,27 +11,33 @@ interface Evidencia {
   imageUrl?: string;
 }
 
+interface Odontograma {
+  superiorEsquerdo: string[];
+  superiorDireito: string[];
+  inferiorEsquerdo: string[];
+  inferiorDireito: string[];
+}
+
 interface Vitima {
-  NIC?: string;
-  nome?: string;
-  genero?: 'masculino' | 'feminino';
-  idade?: number;
-  cpf?: string;
-  endereco?: string;
-  etnia?: string;
-  anotacaoAnatomica?: string;
-  odontograma: {
-    superiorEsquerdo?: string[];
-    superiorDireito?: string[];
-    inferiorEsquerdo?: string[];
-    inferiorDireito?: string[];
-  };
+  odontograma?: Odontograma;
+  _id: string;
+  casoId: string;
+  nome: string;
+  genero: string;
+  idade: number;
+  cpf: string;
+  endereco: string;
+  etnia: string;
+  anotacaoAnatomica: string;
+  createdAt: string;
+  NIC: string;
+  __v: number;
 }
 
 interface PropsEditarModal {
   idEditarModal?: string;
   conteudo?: Evidencia | Vitima | null | undefined;
-  onSave?: (data: Evidencia | Vitima) => void; // Callback para notificar o pai após salvamento
+  onSave?: (data: Evidencia | Vitima) => void;
 }
 
 export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModal) {
@@ -45,88 +52,133 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
     console.log(`Campo ${field} alterado para:`, value);
   };
 
+  const isEvidencia = (data: Evidencia | Vitima): data is Evidencia => 'titulo' in data;
+  const isVitima = (data: Evidencia | Vitima): data is Vitima => 'NIC' in data;
+
   const handleSave = async () => {
     if (!formData || !idEditarModal) {
       Alert.alert("Erro", "Nenhum dado ou ID disponível para salvar.");
       return;
     }
 
+    Alert.alert('Informações editadas e salvas com sucesso')
+
     setLoading(true);
+
     try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert("Erro", "Token de autenticação não encontrado.");
+        setLoading(false);
+        return;
+      }
+
       const apiUrl = 'titulo' in formData
         ? `http://192.168.1.62:3000/evidencias/${idEditarModal}`
-        : `http://192.168.1.62:3000/vitimas/${idEditarModal}`;
-      
-      await axios.put(apiUrl, formData);
-      console.log("Dados salvos com sucesso:", formData);
+        : `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas/${idEditarModal}`;
+
+      // Filtrar formData com base no type guard
+      const cleanedFormData = isEvidencia(formData)
+        ? { titulo: formData.titulo, descricao: formData.descricao, imageUrl: formData.imageUrl }
+        : {
+            NIC: formData.NIC,
+            nome: formData.nome,
+            cpf: formData.cpf,
+            endereco: formData.endereco,
+            etnia: formData.etnia,
+            anotacaoAnatomica: formData.anotacaoAnatomica,
+            casoId: formData.casoId,
+            genero: formData.genero,
+            idade: formData.idade,
+          };
+
+      console.log("Enviando dados:", cleanedFormData);
+
+      const response = await axios.put(apiUrl, cleanedFormData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log("Dados salvos com sucesso:", response.data);
       if (onSave) {
-        onSave(formData as Evidencia | Vitima); // Notifica o pai com os dados salvos
+        onSave(formData as Evidencia | Vitima);
       }
     } catch (error) {
-      console.error("Erro ao salvar:", error);
-      Alert.alert("Erro", "Falha ao salvar os dados. Tente novamente.");
+      const axiosError = error as AxiosError;
+      console.error("Erro ao salvar:", axiosError);
+
+      if (axiosError.response && axiosError.response.status === 401) {
+        Alert.alert("Erro", "Falha na autenticação. Verifique o token ou faça login novamente.");
+      } else {
+        Alert.alert(
+          "Erro",
+          
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (!conteudo) {
+  if (!formData) {
     return <Text style={styles.errorText}>Nenhum conteúdo para editar</Text>;
   }
 
   return (
     <ScrollView style={styles.container}>
-      {('titulo' in conteudo && conteudo.titulo !== undefined) ? (
+      {isEvidencia(formData) ? (
         <View>
           <Text variant="headlineSmall" style={styles.label}>Título:</Text>
           <TextInput
-            value={formData && 'titulo' in formData ? formData.titulo || "" : ""}
+            value={formData.titulo ?? ""}
             onChangeText={(text) => handleChange('titulo', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>Descrição:</Text>
           <TextInput
-            value={formData && 'descricao' in formData ? formData.descricao || "" : ""}
+            value={formData.descricao ?? ""}
             onChangeText={(text) => handleChange('descricao', text)}
             style={styles.input}
             multiline
           />
         </View>
-      ) : ('NIC' in conteudo && conteudo.NIC !== undefined) ? (
+      ) : isVitima(formData) ? (
         <View>
           <Text variant="headlineSmall" style={styles.label}>NIC:</Text>
           <TextInput
-            value={formData && 'NIC' in formData ? formData.NIC || "" : ""}
+            value={formData.NIC ?? ""}
             onChangeText={(text) => handleChange('NIC', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>Nome:</Text>
           <TextInput
-            value={formData && 'nome' in formData ? formData.nome || "" : ""}
+            value={formData.nome ?? ""}
             onChangeText={(text) => handleChange('nome', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>CPF:</Text>
           <TextInput
-            value={formData && 'cpf' in formData ? formData.cpf || "" : ""}
+            value={formData.cpf ?? ""}
             onChangeText={(text) => handleChange('cpf', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>Endereço:</Text>
           <TextInput
-            value={formData && 'endereco' in formData ? formData.endereco || "" : ""}
+            value={formData.endereco ?? ""}
             onChangeText={(text) => handleChange('endereco', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>Etnia:</Text>
           <TextInput
-            value={formData && 'etnia' in formData ? formData.etnia || "" : ""}
+            value={formData.etnia ?? ""}
             onChangeText={(text) => handleChange('etnia', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>Descrição anatômica:</Text>
           <TextInput
-            value={formData && 'anotacaoAnatomica' in formData ? formData.anotacaoAnatomica || "" : ""}
+            value={formData.anotacaoAnatomica ?? ""}
             onChangeText={(text) => handleChange('anotacaoAnatomica', text)}
             style={styles.input}
             multiline
