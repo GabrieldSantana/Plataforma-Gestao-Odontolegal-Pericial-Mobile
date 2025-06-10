@@ -174,6 +174,7 @@ export default function Caso() {
           <Appbar.BackAction onPress={() => router.back()} />
           <Appbar.Content title={caso.nome} />
           <Menu
+            style={{ top: 20, zIndex: 1000 }}
             visible={visibleMenu}
             onDismiss={closeMenu}
             anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
