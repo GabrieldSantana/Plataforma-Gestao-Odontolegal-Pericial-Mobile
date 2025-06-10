@@ -34,7 +34,7 @@ export default function Casos() {
       const response = await axios.get("https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos", {
         headers: {
           Authorization: `Bearer ${token}`,
-        },
+        },    
       });
 
       const casosMapeados: Caso[] = response.data.casos.reverse().map((caso: any) => ({

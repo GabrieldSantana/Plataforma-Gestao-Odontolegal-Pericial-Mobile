@@ -1,3 +1,4 @@
+// ... imports permanecem iguais ...
 import { router, useLocalSearchParams } from 'expo-router';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -28,40 +29,25 @@ export default function Caso() {
     open: boolean;
   }
 
-  interface Evidencia {
-  id: string;
-  titulo: string;
-  descricao: string;
-  imageUrl: string;
-  }
-
   interface Vitima {
-    id: string
+    _id: string;
     NIC: string;
-    Nome: string;
-    Genero: 'Feminino' | 'Masculino';
-    Idade: number;
-    Documento: string;
-    Endereco: string;
-    CorEtnia: string;
-    Odontograma: {
-      anotacao: string;
-    };
-    AnotacaoRegioesAnatomicas: string;
+    nome: string;
+    genero: 'Feminino' | 'Masculino';
+    idade: number;
+    cpf: string;
+    endereco: string;
+    etnia: string;
+    odontograma: any;
+    anotacaoAnatomia: string;
   }
 
-  interface PropsCardEvidencia {
-    updateIdModel: (id: string | number) => void;
-    updateTipo: string,
-  // Outras props...
-  }
 
   const { id } = useLocalSearchParams();
   const [caso, setCaso] = useState<Caso | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [state, setState] = useState<State>({ open: false });
   const [visible, setVisible] = useState(false);
-  const [evidencias, setEvidencias] = useState<Evidencia[] | null>(null);
   const [vitimas, setVitimas] = useState<Vitima[] | null>(null);
 
   const onStateChange = ({ open }: { open: boolean }) => setState({ open });
@@ -71,18 +57,12 @@ export default function Caso() {
   const closeMenu = () => setVisible(false);
 
   const [visibleModal, setVisibleModal] = useState(false);
-
   const mostrarModal = () => setVisibleModal(true);
   const fecharModal = () => setVisibleModal(false);
 
   const [idModal, setIdModal] = useState('');
-
-  const guardarIdModal = (id: string) => {
-    setIdModal(id); // Altera o valor do Componente 2
-  };
-
-  const [tipo, setTipo] = useState("Evidencia")
-
+  const guardarIdModal = (id: string) => setIdModal(id);
+  const [tipo, setTipo] = useState("Evidencia");
 
   async function fetchCaso() {
     try {
@@ -91,16 +71,9 @@ export default function Caso() {
         console.error('Token não encontrado');
         return;
       }
-      const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`
-      const response = await axios.get(
-        apiUrl,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setCaso(response.data);
     } catch (erro: any) {
       console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
@@ -109,45 +82,33 @@ export default function Caso() {
     }
   }
 
-  async function fetchEvidencias() {
-    try {
-      const apiUrl = `http://192.168.1.62:3000/evidencias/`
-      const response = await axios.get(
-        apiUrl,
-      );
-
-      setEvidencias(response.data);
-    } catch (erro: any) {
-      console.error('Erro ao buscar evidencias:', erro.response?.data || erro.message);
-    } finally {
-      setCarregando(false);
-    }
-  }
-
   async function fetchVitimas() {
     try {
-      const apiUrl = `http://192.168.1.62:3000/vitimas/`
-      const response = await axios.get(
-        apiUrl,
-      );
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error('Token não encontrado');
+        return;
+      }
 
-      setVitimas(response.data);
+      const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas?casoId=${id}`;
+      const response = await axios.get(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setVitimas(response.data.vitimas);
     } catch (erro: any) {
-      console.error('Erro ao buscar vitimas:', erro.response?.data || erro.message);
-    } finally {
-      setCarregando(false);
+      console.error('Erro ao buscar vítimas:', erro.response?.data || erro.message);
     }
   }
 
   useEffect(() => {
+    AsyncStorage.setItem('casoId', id as string);
     fetchCaso();
-    fetchEvidencias();
     fetchVitimas();
+    return () => {
+      AsyncStorage.removeItem('casoId');
+    };
   }, []);
-
-  useEffect(() => {
-    guardarIdModal(idModal), [idModal]
-  })
 
   if (carregando || !caso) {
     return (
@@ -171,7 +132,7 @@ export default function Caso() {
       <PaperProvider>
         <Appbar.Header mode="small">
           <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content title={caso.nome} titleMaxFontSizeMultiplier={1} />
+          <Appbar.Content title={caso.nome} />
           <Menu
             style={{ top: 20, zIndex: 1000 }}
             visible={visible}
@@ -179,37 +140,17 @@ export default function Caso() {
             onDismiss={closeMenu}
             anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
           >
-            <Menu.Item
-              onPress={() => {
-                console.log('CLICOU NO BOTÃO GERAR RELATÓRIO');
-                closeMenu();
-              }}
-              title="Gerar relatório"
-            />
-            <Menu.Item
-              onPress={() => {
-                console.log('CLICOU NO BOTÃO DE EDITAR CASO');
-                closeMenu();
-              }}
-              title="Editar caso"
-            />
+            <Menu.Item onPress={() => {}} title="Gerar relatório" />
+            <Menu.Item onPress={() => {}} title="Editar caso" />
             <Divider />
           </Menu>
         </Appbar.Header>
 
         <ScrollView>
           <View style={styles.casoInfoContainer}>
-            <Text style={styles.title} variant="headlineSmall">
-              {caso.nome}
-            </Text>
+            <Text style={styles.title} variant="headlineSmall">{caso.nome}</Text>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'baseline',
-              }}
-            >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
                 <Text style={styles.label}>Status:</Text>
                 <Text style={styles.value}>{caso.status}</Text>
@@ -230,46 +171,73 @@ export default function Caso() {
 
             <Text style={styles.label}>Descrição:</Text>
             <Text style={styles.description}>{caso.descricao}</Text>
-            
-            <View style={{marginTop: 16}}>
-                <Text style={styles.label}>Evidências</Text>
-                <View style={{paddingTop: 10}}>
-                    {evidencias ? (
-                  evidencias.map((evidencia) => (
-                    <CardEvidencia
-                      key={evidencia.id}
-                      nome={evidencia.titulo}
-                      abrirModal={mostrarModal}
-                      updateIdModel={() => guardarIdModal(evidencia.id)}
-                      updateTipo = {() => setTipo("Evidencia")}
-                    />
-                  ))
-                ) : (
-                  <Text>Nenhuma evidência disponível</Text>
-                )}
-                </View>
-            </View>
 
-            <View style={{marginTop: 16}}>
-                <Text style={styles.label}>Vítimas</Text>
-                <View style={{paddingTop: 10}}>
-                    {vitimas ? (
-                  vitimas.map((vitima) => (
-                    <CardEvidencia
-                      key={vitima.id}
-                      nome={vitima.Nome}
-                      abrirModal={mostrarModal}
-                      updateIdModel={() => guardarIdModal(vitima.id)}
-                      updateTipo = {() => setTipo("Vitima")}
-                    />
-                  ))
-                ) : (
-                  <Text>Nenhuma evidência disponível</Text>
-                )}
-                </View>
+            <View style={{ marginTop: 16 }}>
+              <Text style={styles.label}>Evidências</Text>
+              <View style={{ paddingTop: 10 }}>
+                {[1, 2].map((_, index) => (
+                  <CardEvidencia
+                    key={index}
+                    nome={`Evidência visual ${index + 1}`}
+                    abrirModal={mostrarModal}
+                    updateIdModel={() => guardarIdModal(`fake-id-${index}`)}
+                    updateTipo={() => setTipo("Evidencia")}
+                  />
+                ))}
+              </View>
+            </View>
+            <View style={{ marginTop: 16 }}>
+              <Text style={styles.label}>Vítimas</Text>
+              <View style={{ paddingTop: 10 }}>
+                {vitimas && vitimas.length > 0 ? (
+                vitimas.map((vitima, index) => (
+                  <View
+                    key={vitima._id}
+                    style={{
+                      marginBottom: 24,
+                      padding: 16,
+                      backgroundColor: '#f9f9f9',
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: '#ddd',
+                    }}
+                  >
+                    <Text style={[styles.label, { fontSize: 18, marginBottom: 8 }]}>
+                      Vítima {index + 1}
+                    </Text>
+
+                    <Text style={styles.label}>Nome:</Text>
+                    <Text style={styles.value}>{vitima.nome}</Text>
+
+                    <Text style={styles.label}>NIC:</Text>
+                    <Text style={styles.value}>{vitima.NIC}</Text>
+
+                    <Text style={styles.label}>Gênero:</Text>
+                    <Text style={styles.value}>{vitima.genero}</Text>
+
+                    <Text style={styles.label}>Idade:</Text>
+                    <Text style={styles.value}>{vitima.idade}</Text>
+
+                    <Text style={styles.label}>CPF:</Text>
+                    <Text style={styles.value}>{vitima.cpf}</Text>
+
+                    <Text style={styles.label}>Endereço:</Text>
+                    <Text style={styles.value}>{vitima.endereco}</Text>
+
+                    <Text style={styles.label}>Etnia:</Text>
+                    <Text style={styles.value}>{vitima.etnia}</Text>
+
+                    <Text style={styles.label}>Anotação de Anatomia:</Text>
+                    <Text style={styles.value}>{vitima.anotacaoAnatomia}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.value}>Nenhuma vítima disponível</Text>
+              )}
+
+              </View>
             </View>
           </View>
-
         </ScrollView>
 
         <Portal>
@@ -288,7 +256,6 @@ export default function Caso() {
                 onPress: () => router.navigate('../AdicionarVitima'),
                 style: { backgroundColor: '#1A4D77' },
                 color: 'white',
-                size: 'medium',
               },
               {
                 icon: 'pen',
@@ -296,22 +263,14 @@ export default function Caso() {
                 onPress: () => router.navigate('../AdicionarEvidencia'),
                 style: { backgroundColor: '#1A4D77' },
                 color: 'white',
-                size: 'medium',
               },
             ]}
             onStateChange={onStateChange}
-            onPress={() => {
-              if (open) {
-                // Lógica adicional quando o FAB está aberto, se necessário
-              }
-            }}
           />
         </Portal>
 
-        <ModalEvidencia visibleModal={visibleModal} hideModal={fecharModal} caminho={idModal} tipo={tipo}/>
+        <ModalEvidencia visibleModal={visibleModal} hideModal={fecharModal} caminho={idModal} tipo={tipo} />
       </PaperProvider>
-
-      
     </SafeAreaProvider>
   );
 }
@@ -334,18 +293,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 6,
-    color: '#1A4D77', // Mantido do seu código original para consistência
+    color: '#1A4D77',
   },
   value: {
     fontSize: 16,
     marginBottom: 6,
-    color: '#333', // Mantido do seu código original
+    color: '#333',
   },
   description: {
     fontSize: 14,
     marginTop: 8,
     textAlign: 'justify',
-    color: '#333', // Seguindo o padrão do value
+    color: '#333',
   },
   fab: {
     margin: 16,

@@ -13,6 +13,9 @@ import {
 
 import { Appbar } from 'react-native-paper';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { Picker } from '@react-native-picker/picker';
 
 import style from '../../../../styles/vitima.styles';
 
@@ -24,11 +27,11 @@ interface Odontograma {
 }
 
 interface Vitima {
-  cin: string;
+  cin?: string;
   nome: string;
   genero?: string;
   idade?: string;
-  documento?: string;
+  cpf?: string;
   endereco?: string;
   cor?: string;
   odontograma: Odontograma;
@@ -46,7 +49,7 @@ const vitimaInicial: Vitima = {
   },
   genero: '',
   idade: '',
-  documento: '',
+  cpf: '',
   endereco: '',
   cor: '',
   anotacoesOdontograma: '',
@@ -57,6 +60,15 @@ const regioes: { chave: keyof Odontograma; label: string }[] = [
   { chave: 'superiorDireito', label: 'Superior Direito' },
   { chave: 'inferiorEsquerdo', label: 'Inferior Esquerdo' },
   { chave: 'inferiorDireito', label: 'Inferior Direito' },
+];
+
+const coresOpcoes = [
+  'Branca',
+  'Preta',
+  'Parda',
+  'Amarela',
+  'Indígena',
+  'Não identificado',
 ];
 
 const CadastrarVitima = () => {
@@ -98,17 +110,54 @@ const CadastrarVitima = () => {
     }));
   };
 
-  const salvar = () => {
-    if (!vitima.cin || !vitima.nome) {
-      Alert.alert('Erro', 'CIN e Nome são obrigatórios.');
+  const salvar = async () => {
+    if (!vitima.nome) {
+      Alert.alert('Erro', 'O nome é obrigatório.');
       return;
     }
 
-    const jsonVitima = JSON.stringify(vitima, null, 2);
-    console.log('✅ Vítima cadastrada:', jsonVitima);
-    Alert.alert('Sucesso', 'Vítima cadastrada com sucesso!');
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const casoId = await AsyncStorage.getItem('casoId'); // busca o caso ativo
 
-    setVitima(vitimaInicial);
+      if (!token || !casoId) {
+        Alert.alert('Erro', 'Token ou Caso ID não encontrados.');
+        return;
+      }
+
+      const response = await fetch('https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          casoId,
+          nome: vitima.nome,
+          genero: vitima.genero,
+          idade: vitima.idade ? parseInt(vitima.idade, 10) : undefined,
+          cpf: vitima.cpf,
+          endereco: vitima.endereco,
+          etnia: vitima.cor,
+          anotacaoAnatomia: vitima.anotacoesOdontograma,
+          odontograma: vitima.odontograma,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data);
+        Alert.alert('Erro ao salvar', data?.message || 'Erro desconhecido');
+        return;
+      }
+
+      Alert.alert('Sucesso', 'Vítima cadastrada com sucesso!');
+      setVitima(vitimaInicial);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Ocorreu um erro ao salvar a vítima.');
+    }
   };
 
   return (
@@ -160,11 +209,13 @@ const CadastrarVitima = () => {
             onChangeText={(t) => atualizarCampo('idade', t)}
           />
 
-          <Text style={style.label}>Documento</Text>
+          <Text style={style.label}>CPF</Text>
           <TextInput
             style={style.input}
-            value={vitima.documento}
-            onChangeText={(t) => atualizarCampo('documento', t)}
+            value={vitima.cpf}
+            onChangeText={(t) => atualizarCampo('cpf', t)}
+            keyboardType="numeric"
+            maxLength={11}
           />
 
           <Text style={style.label}>Endereço</Text>
@@ -175,11 +226,18 @@ const CadastrarVitima = () => {
           />
 
           <Text style={style.label}>Cor</Text>
-          <TextInput
-            style={style.input}
-            value={vitima.cor}
-            onChangeText={(t) => atualizarCampo('cor', t)}
-          />
+          <View style={[style.input, { padding: 0 }]}>
+            <Picker
+              selectedValue={vitima.cor}
+              onValueChange={(itemValue) => atualizarCampo('cor', itemValue)}
+              mode="dropdown"
+            >
+              <Picker.Item label="Selecione a cor" value="" />
+              {coresOpcoes.map((cor) => (
+                <Picker.Item key={cor} label={cor} value={cor} />
+              ))}
+            </Picker>
+          </View>
 
           {regioes.map(({ chave, label }) => (
             <View key={chave} style={style.regiaoContainer}>
@@ -210,7 +268,7 @@ const CadastrarVitima = () => {
             onChangeText={(t) => atualizarCampo('anotacoesOdontograma', t)}
           />
 
-          <TouchableOpacity style={[style.btn, style.saveBtn]} onPress={salvar}>
+          <TouchableOpacity style={[style.btn]} onPress={salvar}>
             <Text style={style.btnText}>Cadastrar Vítima</Text>
           </TouchableOpacity>
         </ScrollView>
