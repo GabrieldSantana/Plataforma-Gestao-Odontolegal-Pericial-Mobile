@@ -78,7 +78,7 @@ export default function Casos() {
           onChangeText={setSearchQuery}
           value={searchQuery}
           mode="bar"
-          style={{width: 335, height: 70, backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
+          style={{width: 335, height: 55, backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
         />
       </View>
       <View style={styles.contentContainer}>

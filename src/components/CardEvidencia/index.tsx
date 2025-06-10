@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
 import { Portal, Modal, PaperProvider, Button } from 'react-native-paper';
@@ -10,18 +10,26 @@ interface PropsCardEvidencia{
   updateTipo: () => void
 }
 
-const CardEvidencia = ({nome, abrirModal, updateIdModel}: PropsCardEvidencia) => {
+
+const CardEvidencia = ({nome, abrirModal, updateIdModel, updateTipo}: PropsCardEvidencia) => {
+
+  function updateCard(){
+    updateIdModel()
+    updateTipo()
+  }
 
   return (
     <PaperProvider>
       
-        <View style={styles.container}>
-          <Icon name="image" size={24} color="#000" style={styles.icon} />
-          <Text style={styles.text}>{nome}</Text>
-          <TouchableOpacity style={styles.menuIcon} onPress={abrirModal} onPressIn={updateIdModel}>
-            <Icon name="more-vert" size={24} color="#111E5F" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={abrirModal} onPressIn={updateCard}>
+          <View style={styles.container}>
+            <Icon name="image" size={24} color="#000" style={styles.icon} />
+            <Text style={styles.text}>{nome}</Text>
+            <View style={styles.menuIcon}>
+              <Icon name="more-vert" size={24} color="#111E5F" />
+            </View>
+          </View>
+        </TouchableOpacity>
       
 
       

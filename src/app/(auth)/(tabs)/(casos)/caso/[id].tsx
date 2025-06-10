@@ -2,7 +2,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { ScrollView, StyleSheet, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { Appbar, FAB, Portal, PaperProvider, Menu, Divider, Text, Modal, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,6 +29,18 @@ export default function Caso() {
     open: boolean;
   }
 
+  interface Evidencia {
+    id: string;
+    titulo: string;
+    descricao: string;
+    imageUrl: string;
+  }
+
+  interface PropsCardEvidencia {
+    updateIdModel: (id: string | number) => void;
+    updateTipo: string;
+    // Outras props...
+  }
   interface Vitima {
     _id: string;
     NIC: string;
@@ -49,6 +61,7 @@ export default function Caso() {
   const [state, setState] = useState<State>({ open: false });
   const [visible, setVisible] = useState(false);
   const [vitimas, setVitimas] = useState<Vitima[] | null>(null);
+  const [refreshing, setRefreshing] = useState(false); // Estado para recarregamento
 
   const onStateChange = ({ open }: { open: boolean }) => setState({ open });
   const { open } = state;
@@ -61,7 +74,9 @@ export default function Caso() {
   const fecharModal = () => setVisibleModal(false);
 
   const [idModal, setIdModal] = useState('');
+
   const guardarIdModal = (id: string) => setIdModal(id);
+
   const [tipo, setTipo] = useState("Evidencia");
 
   async function fetchCaso() {
@@ -71,9 +86,11 @@ export default function Caso() {
         console.error('Token não encontrado');
         return;
       }
+      
       const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setCaso(response.data);
     } catch (erro: any) {
       console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
@@ -98,17 +115,33 @@ export default function Caso() {
       setVitimas(response.data.vitimas);
     } catch (erro: any) {
       console.error('Erro ao buscar vítimas:', erro.response?.data || erro.message);
+
     }
   }
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchEvidencias(), fetchVitimas()]);
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     AsyncStorage.setItem('casoId', id as string);
     fetchCaso();
+  }, []);
+
+  useEffect(() => {
+    fetchEvidencias();
     fetchVitimas();
     return () => {
       AsyncStorage.removeItem('casoId');
     };
   }, []);
+
+
+  useEffect(() => {
+    guardarIdModal(idModal);
+  }, [idModal]);
 
   if (carregando || !caso) {
     return (
@@ -146,7 +179,11 @@ export default function Caso() {
           </Menu>
         </Appbar.Header>
 
-        <ScrollView>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1A4D77']} />
+          }
+        >
           <View style={styles.casoInfoContainer}>
             <Text style={styles.title} variant="headlineSmall">{caso.nome}</Text>
 
@@ -175,6 +212,7 @@ export default function Caso() {
             <View style={{ marginTop: 16 }}>
               <Text style={styles.label}>Evidências</Text>
               <View style={{ paddingTop: 10 }}>
+
                 {[1, 2].map((_, index) => (
                   <CardEvidencia
                     key={index}
@@ -184,6 +222,7 @@ export default function Caso() {
                     updateTipo={() => setTipo("Evidencia")}
                   />
                 ))}
+
               </View>
             </View>
             <View style={{ marginTop: 16 }}>
@@ -235,6 +274,24 @@ export default function Caso() {
                 <Text style={styles.value}>Nenhuma vítima disponível</Text>
               )}
 
+
+            <View style={{ marginTop: 16 }}>
+              <Text style={styles.label}>Vítimas</Text>
+              <View style={{ paddingTop: 10 }}>
+                {vitimas ? (
+                  vitimas.map((vitima) => (
+                    <CardEvidencia
+                      key={vitima.id}
+                      nome={vitima.nome}
+                      abrirModal={mostrarModal}
+                      updateIdModel={() => guardarIdModal(vitima.id)}
+                      updateTipo={() => setTipo("Vitima")}
+                    />
+                  ))
+                ) : (
+                  <Text>Nenhuma evidência disponível</Text>
+                )}
+
               </View>
             </View>
           </View>
@@ -278,7 +335,8 @@ export default function Caso() {
 const styles = StyleSheet.create({
   casoInfoContainer: {
     flex: 1,
-    paddingVertical: 20,
+    paddingTop: 20,
+    paddingBottom: 80,
     paddingLeft: 30,
     zIndex: -1,
     width: '95%',
