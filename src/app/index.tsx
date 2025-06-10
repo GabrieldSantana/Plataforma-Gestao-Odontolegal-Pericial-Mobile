@@ -44,9 +44,9 @@ export default function Login() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#F2F4FF" hidden={false} />
-      <Image source={require('../../assets/logo-gop.png')} />
+      <Image style={{width: 300, height: 200, objectFit: 'contain'}} source={require('../../assets/logo-gop.png')} />
       <View style={styles.formulario}>
-        <Text style={styles.titulo}>Loginn</Text>
+        <Text style={styles.titulo}>Login</Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -63,7 +63,7 @@ export default function Login() {
           onChangeText={setSenha}
         />
         <TouchableOpacity style={styles.button} onPress={logar}>
-          <Text style={styles.textButton}>Loginn</Text>
+          <Text style={styles.textButton}>Login</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F4FF",
   },
   formulario: {
-    marginTop: 100,
+    marginTop: 35,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 25,
