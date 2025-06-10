@@ -9,6 +9,7 @@ export default function AuthLayout() {
     const verificarToken = async () => {
       const token = await AsyncStorage.getItem('token');
       setIsAutenticado(!!token); // true se existir
+      console.log(token)
     };
 
     verificarToken();
