@@ -177,27 +177,18 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo 
           </View>
         </View>
         :
-
+        
+        // quando for vitima modal
         <View style={styles.containerVitima}>
-          <View style={styles.btnSair}>
+      
+          <View style={styles.header}>
+            <Text variant="headlineMedium" style={styles.headerText}>{tipo}</Text>
             <Button 
               icon="close" 
               onPress={hideModal}
               textColor="#1A4D77"
             >
               Sair
-            </Button>
-          </View>
-          <View style={styles.header}>
-            <Text variant="headlineMedium" style={styles.headerText}>{tipo}</Text>
-            <Button 
-              icon="clipboard-list" 
-              mode="contained"
-              style={{borderRadius: 6, marginTop: 10}}
-              buttonColor="#1A4D77"
-              onPress={() => console.log('Botão gerar laudo pressionado')}
-            >
-              Gerar Laudo
             </Button>
           </View>
 
@@ -269,7 +260,8 @@ const styles = StyleSheet.create({
 
   containerVitima: {
     flex: 1,
-    paddingVertical: 5,
+    paddingTop: 20,
+    paddingBottom: 5,
     paddingHorizontal: 10,
   },
 
@@ -283,7 +275,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   headerText: {
     fontWeight: 'bold',
