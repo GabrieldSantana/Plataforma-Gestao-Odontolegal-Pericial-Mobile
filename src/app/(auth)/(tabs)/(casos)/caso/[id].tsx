@@ -319,7 +319,8 @@ export default function Caso() {
 const styles = StyleSheet.create({
   casoInfoContainer: {
     flex: 1,
-    paddingVertical: 20,
+    paddingTop: 20,
+    paddingBottom: 80,
     paddingLeft: 30,
     zIndex: -1,
     width: '95%',
