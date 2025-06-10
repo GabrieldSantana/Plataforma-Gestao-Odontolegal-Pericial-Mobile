@@ -50,68 +50,34 @@
       "responsavel": "Dr Silva",
       "vitima": "Meiki"
     }
-    
   ],
-
   "evidencias": [
     {
-      "id": "1",
-      "titulo": "Foto do C# do João",
-      "descricao": "O c# do João foi destruído por multilações do back com alta tipagem",
-      "imageUrl": "https://avatars.githubusercontent.com/u/80109069?v=4"
-    },
-    {
-      "id": "4",
-      "titulo": "Foto do C# do João",
-      "descricao": "O c# do João foi destruído por multilações do back com alta tipagem",
-      "imageUrl": "https://www.cloudia.com.br/wp-content/uploads/anatomico.jpg"
-    },
-    {
-      "id": "7",
-      "titulo": "ashdash",
-      "descricao": "O c# do João foi destruído por multilações do back com alta tipagem",
-      "imageUrl": "https://www.cloudia.com.br/wp-content/uploads/anatomico.jpg"
-    },
-    {
       "id": "8",
-      "titulo": "geovane dedo",
-      "descricao": "geovane ratooooo descricao",
+      "titulo": "geovane  ovo",
+      "descricao": "geovane bsssaa\n\n\n",
       "imageUrl": "https://avatars.githubusercontent.com/u/144921013?v=4"
     }
   ],
-
   "vitimas": [
-    {
-      "id": "1",
-      "NIC": "V001",
-      "nome": "Ana Silva",
-      "genero": "Feminino",
-      "idade": 34,
-      "cpf": "123.456.789-00",
-      "endereco": "Rua das Flores, 123, Centro, São Paulo, SP",
-      "etnia": "Parda",
-      "odontograma": {
-        "superiorEsquerdo": ["Dente 21 com restauração em resina"],
-        "superiorDireito": [],
-        "inferiorEsquerdo": ["Ausência do dente 36"],
-        "inferiorDireito": []
-      },
-      "anotacaoAnatomica": "Cicatriz na região frontal esquerda, fratura no antebraço direito"
-    },
     {
       "id": "2",
       "NIC": "V002",
-      "nome": "João Pereira",
+      "nome": "João Pereiraaaaaa",
       "genero": "Masculino",
       "idade": 45,
       "cpf": "987.654.321-00",
       "endereco": "Av. Brasil, 456, Jardim América, Rio de Janeiro, RJ",
-      "etnia": "Branca",
+      "etnia": "Preta",
       "odontograma": {
         "superiorEsquerdo": [],
-        "superiorDireito": ["Dente 11 com coroa metálica"],
+        "superiorDireito": [
+          "Dente 11 com coroa metálica"
+        ],
         "inferiorEsquerdo": [],
-        "inferiorDireito": ["Dente 47 ausente"]
+        "inferiorDireito": [
+          "Dente 47 ausente"
+        ]
       },
       "anotacaoAnatomica": "Hematoma na região torácica, lesão na perna esquerda"
     },
@@ -127,44 +93,14 @@
       "odontograma": {
         "superiorEsquerdo": [],
         "superiorDireito": [],
-        "inferiorEsquerdo": ["Dente 31 com cárie"],
-        "inferiorDireito": ["Extração do dente 46"]
+        "inferiorEsquerdo": [
+          "Dente 31 com cárie"
+        ],
+        "inferiorDireito": [
+          "Extração do dente 46"
+        ]
       },
       "anotacaoAnatomica": "Equimose no ombro direito, arranhões na mão esquerda"
-    },
-    {
-      "id": "4",
-      "NIC": "V004",
-      "nome": "Carlos Santos",
-      "genero": "Masculino",
-      "idade": 19,
-      "cpf": "321.654.987-00",
-      "endereco": "Travessa da Paz, 101, Vila Nova, Salvador, BA",
-      "etnia": "Indígena",
-      "odontograma": {
-        "superiorEsquerdo": ["Dentes intactos"],
-        "superiorDireito": ["Sem restaurações"],
-        "inferiorEsquerdo": ["Sem ausências"],
-        "inferiorDireito": []
-      },
-      "anotacaoAnatomica": "Laceração na região cervical, contusão no joelho direito"
-    },
-    {
-      "id": "5",
-      "NIC": "V005",
-      "nome": "Fernanda Costa",
-      "genero": "Feminino",
-      "idade": 52,
-      "cpf": "654.321.987-00",
-      "endereco": "Rua das Árvores, 202, Boa Viagem, Recife, PE",
-      "etnia": "Branca",
-      "odontograma": {
-        "superiorEsquerdo": ["Prótese parcial superior"],
-        "superiorDireito": ["Ausência do dente 26"],
-        "inferiorEsquerdo": [],
-        "inferiorDireito": ["Ausência do dente 27"]
-      },
-      "anotacaoAnatomica": "Fratura na costela esquerda, hematoma na coxa direita"
     }
   ]
 }
