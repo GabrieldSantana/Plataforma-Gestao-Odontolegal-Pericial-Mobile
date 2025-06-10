@@ -1,29 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { IUser } from '../../../../interfaces/IUser';
-import { styles } from '../../../../styles/AdicionarUsuarios.styles';
 
 interface Props {
-  usuarioParaEditar?: IUser | null;
   onClose: () => void;
   onSave: (usuario: IUser) => void;
+  usuarioParaEditar?: IUser | null;
 }
 
-const AdicionarUsuarios = ({ usuarioParaEditar, onClose, onSave }: Props) => {
+const AdicionarUsuarios = ({ onClose, onSave, usuarioParaEditar }: Props) => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [cpf, setCpf] = useState('');
   const [cargo, setCargo] = useState('');
   const [senha, setSenha] = useState('');
 
+  // Preenche campos se estiver editando
   useEffect(() => {
     if (usuarioParaEditar) {
       setNome(usuarioParaEditar.nome);
@@ -51,15 +43,7 @@ const AdicionarUsuarios = ({ usuarioParaEditar, onClose, onSave }: Props) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Cabeçalho com seta de voltar */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onClose} style={styles.backButton}>
-          <Icon name="arrow-left" size={24} color="#001F54" />
-        </TouchableOpacity>
-        <Text style={styles.title}>
-          {usuarioParaEditar ? 'Editar Usuário' : 'Cadastrar Usuário'}
-        </Text>
-      </View>
+      <Text style={styles.title}>{usuarioParaEditar ? 'Editar Usuário' : 'Cadastrar Usuário'}</Text>
 
       <TextInput
         placeholder="Nome"
@@ -79,7 +63,7 @@ const AdicionarUsuarios = ({ usuarioParaEditar, onClose, onSave }: Props) => {
         value={cpf}
         onChangeText={setCpf}
         style={styles.input}
-        editable={!usuarioParaEditar}
+        editable={!usuarioParaEditar} // CPF não pode ser editado, pois identifica o usuário
       />
       <TextInput
         placeholder="Cargo"
@@ -96,20 +80,12 @@ const AdicionarUsuarios = ({ usuarioParaEditar, onClose, onSave }: Props) => {
       />
 
       <View style={styles.buttonsRow}>
-        <TouchableOpacity
-          style={[styles.button, styles.cancelButton]}
-          onPress={onClose}
-        >
+        <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
           <Text style={styles.buttonText}>Cancelar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.saveButton]}
-          onPress={salvar}
-        >
-          <Text style={styles.buttonText}>
-            {usuarioParaEditar ? 'Salvar' : 'Cadastrar'}
-          </Text>
+        <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={salvar}>
+          <Text style={styles.buttonText}>{usuarioParaEditar ? 'Salvar' : 'Cadastrar'}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -117,3 +93,49 @@ const AdicionarUsuarios = ({ usuarioParaEditar, onClose, onSave }: Props) => {
 };
 
 export default AdicionarUsuarios;
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    paddingTop: 60,
+    backgroundColor: '#FFF',
+    flexGrow: 1,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0A2A66',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#0A66C2',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#ccc',
+  },
+  saveButton: {
+    backgroundColor: '#0A66C2',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});
