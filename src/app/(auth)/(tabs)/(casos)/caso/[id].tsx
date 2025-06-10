@@ -29,10 +29,15 @@ export default function Caso() {
   }
 
   interface Evidencia {
-    id: string;
-    titulo: string;
+    _id: string;
+    casoId: string;
+    arquivoId: string;
+    nomeArquivo: string;
+    tipoArquivo: string;
+    tipoEvidencia: string;
     descricao: string;
-    imageUrl: string;
+    createdAt: string;
+    __v: number;
   }
 
   interface Vitima {
@@ -87,34 +92,24 @@ export default function Caso() {
       setCaso(response.data);
     } catch (erro: any) {
       console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
-    } finally {
-      setCarregando(false);
     }
   }
 
-  // async function fetchEvidencias() {
-  //   try {
-  //     const token = await AsyncStorage.getItem('token');
-  //     if (!token) {
-  //       console.error('Token não encontrado');
-  //       return;
-  //     }
-  //     const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias?casoId=${id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-  //     setEvidencias(response.data.evidencias || []);
-  //     console.log(evidencias)
-  //   } catch (erro: any) {
-  //     console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
-  //   }
-  // }
   async function fetchEvidencias() {
     try {
-      const apiUrl = `http://192.168.1.62:3000/evidencias/`;
-      const response = await axios.get(apiUrl);
-      setEvidencias(response.data);
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error('Token não encontrado');
+        return;
+      }
+      console.log('Buscando evidências para casoId:', id); // Debug the id
+      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias?casoId=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Resposta da API de evidências:', response.data); // Debug the response
+      setEvidencias(response.data || []);
     } catch (erro: any) {
-      console.error('Erro ao buscar evidencias:', erro.response?.data || erro.message);
+      console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
     }
   }
 
@@ -136,19 +131,37 @@ export default function Caso() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
-    setRefreshing(false);
+    try {
+      await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
+    } catch (erro) {
+      console.error('Erro ao atualizar:', erro);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   useEffect(() => {
+    console.log('ID do caso:', id); // Debug the id
     AsyncStorage.setItem('casoId', id as string);
-    fetchCaso();
-    fetchEvidencias();
-    fetchVitimas();
+    const fetchData = async () => {
+      setCarregando(true);
+      try {
+        await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
+      } catch (erro) {
+        console.error('Erro ao carregar dados:', erro);
+      } finally {
+        setCarregando(false);
+      }
+    };
+    fetchData();
     return () => {
       AsyncStorage.removeItem('casoId');
     };
   }, [id]);
+
+  useEffect(() => {
+    console.log('Evidências atualizadas:', evidencias); // Debug updated state
+  }, [evidencias]);
 
   if (carregando || !caso) {
     return (
@@ -217,10 +230,10 @@ export default function Caso() {
                 {evidencias.length > 0 ? (
                   evidencias.map((evidencia) => (
                     <CardEvidencia
-                      key={evidencia.id}
-                      nome={evidencia.titulo}
+                      key={evidencia._id}
+                      nome={evidencia.nomeArquivo}
                       abrirModal={mostrarModal}
-                      updateIdModel={() => setIdModal(evidencia.id)}
+                      updateIdModel={() => setIdModal(evidencia._id)}
                       updateTipo={() => setTipo('Evidencia')}
                     />
                   ))
@@ -235,7 +248,6 @@ export default function Caso() {
               <View style={{ paddingTop: 10 }}>
                 {vitimas.length > 0 ? (
                   vitimas.map((vitima) => (
-                    
                     <CardEvidencia
                       key={vitima._id}
                       nome={vitima.nome}
@@ -243,7 +255,6 @@ export default function Caso() {
                       updateIdModel={() => setIdModal(vitima._id)}
                       updateTipo={() => setTipo('Vitima')}
                     />
-
                   ))
                 ) : (
                   <Text style={styles.value}>Nenhuma vítima disponível</Text>
