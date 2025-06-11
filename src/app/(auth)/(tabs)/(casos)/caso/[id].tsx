@@ -102,16 +102,17 @@ export default function Caso() {
         console.error('Token não encontrado');
         return;
       }
-      console.log('Buscando evidências para casoId:', id); // Debug the id
+      console.log('Buscando evidências para casoId:', id);
       const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias?casoId=${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Resposta da API de evidências:', response.data); // Debug the response
-      setEvidencias(response.data || []);
+      console.log('Resposta da API de evidências:', response.data);
+      setEvidencias(response.data.evidencias || []); // 🔧 Correção aqui
     } catch (erro: any) {
       console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
     }
   }
+
 
   async function fetchVitimas() {
     try {

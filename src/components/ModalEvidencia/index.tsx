@@ -6,10 +6,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EditarModal } from "../EditarModal";
 
 interface Evidencia {
-  id?: number;
-  titulo?: string;
+  _id?: string;
+  tituloEvidencia?: string;
   descricao?: string;
-  imageUrl?: string;
+  nomeArquivo?: string;
+  tipoArquivo?: string;
+  tipoEvidencia?: string;
+  criadoEm?: string;
+  coletadoPor?: string;
 }
 
 interface Odontograma {
@@ -20,7 +24,7 @@ interface Odontograma {
 }
 
 interface Vitima {
-  odontograma?: Odontograma; // Made odontograma optional
+  odontograma?: Odontograma;
   _id: string;
   casoId: string;
   nome: string;
@@ -65,14 +69,16 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
     const token = await AsyncStorage.getItem('token');
 
     if (tipo === 'Evidencia') {
-      const apiUrl = `http://192.168.1.62:3000/evidencias/${id}`;
+      const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias/${id}`;
       try {
         setLoading(true);
-        const response = await axios.get(apiUrl);
-        setEvidencia(response.data);
+        const response = await axios.get(apiUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setEvidencia(response.data.evidencia);
         setError(null);
       } catch (err) {
-        setError('Failed to fetch evidencia');
+        setError('Falha ao buscar evidência');
         console.error(err);
       } finally {
         setLoading(false);
@@ -84,11 +90,10 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
         const response = await axios.get(apiUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('API Response for vitima:', JSON.stringify(response.data, null, 2)); // Debug log
-        setVitima(response.data.vitima || response.data); // Handle nested vitima
+        setVitima(response.data.vitima || response.data);
         setError(null);
       } catch (err) {
-        setError('Failed to fetch vitima');
+        setError('Falha ao buscar vítima');
         console.error(err);
       } finally {
         setLoading(false);
@@ -112,17 +117,20 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
           style: 'destructive',
           onPress: async () => {
             if (tipo === 'Evidencia') {
-              const apiUrl = `http://192.168.1.62:3000/evidencias/${id}`;
+              const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias/${id}`;
               try {
                 setLoading(true);
-                await axios.delete(apiUrl);
-                console.log('Evidência deletada:', evidencia);
+                await axios.delete(apiUrl, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  }
+                });
                 setEvidencia(null);
                 setError(null);
                 hideModal();
                 onDeleteSuccess?.();
               } catch (err) {
-                setError('Failed to delete evidencia');
+                setError('Falha ao excluir evidência');
                 console.error(err);
               } finally {
                 setLoading(false);
@@ -136,13 +144,12 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                     Authorization: `Bearer ${token}`,
                   }
                 });
-                console.log('Vítima deletada:', vitima);
                 setVitima(null);
                 setError(null);
                 hideModal();
                 onDeleteSuccess?.();
               } catch (err) {
-                setError('Failed to delete vitima');
+                setError('Falha ao excluir vítima');
                 console.error(err);
               } finally {
                 setLoading(false);
@@ -213,13 +220,21 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
             ) : (
               <ScrollView>
                 <Text variant="headlineSmall" style={styles.title}>Título:</Text>
-                <Text style={styles.text}>{evidencia?.titulo || 'Sem título'}</Text>
+                <Text style={styles.text}>{evidencia?.tituloEvidencia || 'Sem título'}</Text>
+
                 <Text variant="headlineSmall" style={styles.title}>Descrição:</Text>
                 <Text style={styles.text}>{evidencia?.descricao || 'Sem descrição'}</Text>
+
+                <Text variant="headlineSmall" style={styles.title}>Tipo de Evidência:</Text>
+                <Text style={styles.text}>{evidencia?.tipoEvidencia || 'Não informado'}</Text>
+
+                <Text variant="headlineSmall" style={styles.title}>ID do Coletor:</Text>
+                <Text style={styles.text}>{evidencia?.coletadoPor || 'Não informado'}</Text>
+
                 <Text variant="headlineSmall" style={styles.title}>Imagem anexada:</Text>
-                {evidencia?.imageUrl ? (
-                  <Image 
-                    source={{ uri: evidencia.imageUrl }} 
+                {evidencia?.nomeArquivo ? (
+                  <Image
+                    source={{ uri: `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/uploads/${evidencia.nomeArquivo}` }}
                     style={styles.imagem}
                     resizeMode="contain"
                   />
@@ -309,38 +324,22 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                   <Text style={styles.text}>{vitima.anotacaoAnatomica || 'Sem anotação'}</Text>
 
                   <Text variant="headlineSmall" style={styles.title}>Odontograma:</Text>
-                  {vitima.odontograma ? (
-                    <>
-                      <Text style={styles.text}>
-                        Superior Esquerdo: {vitima.odontograma.superiorEsquerdo?.join(', ') || 'Nenhum'}
-                      </Text>
-                      <Text style={styles.text}>
-                        Superior Direito: {vitima.odontograma.superiorDireito?.join(', ') || 'Nenhum'}
-                      </Text>
-                      <Text style={styles.text}>
-                        Inferior Esquerdo: {vitima.odontograma.inferiorEsquerdo?.join(', ') || 'Nenhum'}
-                      </Text>
-                      <Text style={styles.text}>
-                        Inferior Direito: {vitima.odontograma.inferiorDireito?.join(', ') || 'Nenhum'}
-                      </Text>
-                    </>
-                  ) : (
-                    <Text style={styles.text}>Nenhum odontograma disponível</Text>
-                  )}
-
-                  <Text variant="headlineSmall" style={styles.title}>Data de Criação:</Text>
-                  <Text style={styles.text}>
-                    {new Date(vitima.createdAt).toLocaleDateString('pt-BR') || 'Sem data'}
-                  </Text>
+                  <ScrollView horizontal>
+                    <View style={styles.odontogramaContainer}>
+                      {/* Renderize aqui os quadrantes do odontograma */}
+                      {/* Exemplo: */}
+                      <Text>Superior Esquerdo: {vitima.odontograma?.superiorEsquerdo.join(', ') || 'N/A'}</Text>
+                      <Text>Superior Direito: {vitima.odontograma?.superiorDireito.join(', ') || 'N/A'}</Text>
+                      <Text>Inferior Esquerdo: {vitima.odontograma?.inferiorEsquerdo.join(', ') || 'N/A'}</Text>
+                      <Text>Inferior Direito: {vitima.odontograma?.inferiorDireito.join(', ') || 'N/A'}</Text>
+                    </View>
+                  </ScrollView>
                 </>
               ) : (
-                <Text style={styles.text}>Nenhuma informação de vítima disponível</Text>
+                <Text>Nenhuma vítima encontrada.</Text>
               )}
             </ScrollView>
-            )
-
-            }
-
+            )}
 
             <View style={styles.botoes}>
               <Button 
@@ -376,68 +375,65 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 5,
+    paddingBottom: 15,
   },
   containerVitima: {
     flex: 1,
-    paddingTop: 20,
-    paddingBottom: 5,
+    paddingTop: 10,
+    paddingBottom: 10,
     paddingHorizontal: 10,
   },
   btnSair: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 8,
-    marginRight: -12,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 3,
+    marginRight: 3,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: "center",
   },
   headerText: {
-    fontWeight: 'bold',
-    color: '#111E5F',
+    fontWeight: "bold",
+    fontSize: 18,
+    marginVertical: 10,
   },
   title: {
-    color: '#111E5F',
-    marginVertical: 6,
-    fontWeight: '600',
+    fontWeight: "bold",
+    marginTop: 10,
   },
   text: {
-    color: '#333',
-    marginBottom: 12,
+    fontSize: 16,
   },
   imagem: {
+    height: 250,
     width: '100%',
-    height: 120,
+    marginVertical: 10,
+    borderRadius: 8,
   },
   botoes: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 20,
-    marginTop: 24,
-    paddingBottom: 16,
+    justifyContent: 'space-between',
+    marginTop: 15,
   },
   botao: {
-    borderRadius: 6,
     flex: 1,
+    marginHorizontal: 5,
   },
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    marginTop: 50,
     alignItems: 'center',
   },
   errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    marginTop: 50,
     alignItems: 'center',
-    gap: 16,
   },
   errorText: {
-    color: '#C51B1B',
-    textAlign: 'center',
+    color: 'red',
+    marginBottom: 15,
+  },
+  odontogramaContainer: {
+    flexDirection: 'row',
+    gap: 15,
+    paddingVertical: 10,
   },
 });

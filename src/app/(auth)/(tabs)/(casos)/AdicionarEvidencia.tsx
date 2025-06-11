@@ -17,7 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appbar } from 'react-native-paper';
 import { router } from 'expo-router';
 
@@ -103,26 +103,71 @@ export default function CadastroEvidencia() {
     }
   };
 
-  const handleSubmit = () => {
-    if (!titulo || !descricao || !categoria || !local) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+  const handleSubmit = async () => {
+  if (!titulo || !descricao || !categoria || !local) {
+    Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+    return;
+  }
+
+  try {
+    const casoId = await AsyncStorage.getItem('casoId');
+    const token = await AsyncStorage.getItem('token');
+
+    if (!casoId) {
+      Alert.alert('Erro', 'ID do caso não encontrado.');
       return;
     }
 
-    const dados = {
-      titulo,
-      descricao,
-      categoria,
-      local,
-      imagem: imageUri,
-      coordenadas: coordinates,
-    };
+    if (!imageUri) {
+      Alert.alert('Erro', 'Por favor, selecione uma imagem.');
+      return;
+    }
 
-    console.log('Enviando dados:', dados);
+    const formData = new FormData();
+
+    formData.append('casoId', casoId);
+    formData.append('tituloEvidencia', titulo);
+    formData.append('tipoEvidencia', categoria);
+    formData.append('descricao', descricao);
+
+    // Pegando nome e tipo do arquivo da imagem selecionada
+    const fileName = imageUri.split('/').pop() ?? 'imagem.jpg';
+    let fileType = 'image/jpeg';
+
+    if (fileName.toLowerCase().endsWith('.png')) fileType = 'image/png';
+    else if (fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')) fileType = 'image/jpeg';
+
+    formData.append('arquivo', {
+      uri: Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri,
+      name: fileName,
+      type: fileType,
+    } as any);
+
+    const apiUrl = 'https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias';
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro na API:', response.status, errorText);
+      throw new Error('Erro ao enviar a evidência.');
+    }
+
     Alert.alert('Sucesso', 'Evidência cadastrada com sucesso!');
-
     resetForm();
-  };
+  } catch (error) {
+    console.error('Falha ao cadastrar evidência:', error);
+    Alert.alert('Erro', 'Falha ao cadastrar a evidência.');
+  }
+};
+
+
 
   const resetForm = () => {
     setTitulo('');
