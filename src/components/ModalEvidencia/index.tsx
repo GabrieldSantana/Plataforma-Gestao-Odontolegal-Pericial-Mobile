@@ -64,7 +64,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
     marginHorizontal: 'auto',
     borderRadius: 8,
   };
-
+  
   const fetchDadosModal = async () => {
     const token = await AsyncStorage.getItem('token');
 

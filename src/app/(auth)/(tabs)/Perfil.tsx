@@ -27,7 +27,7 @@ export default function Perfil() {
       }
       const usuarioDados: Usuario = JSON.parse(json);
       setUsuario(usuarioDados);
-      console.log(`Info-usuario: ${usuario}` )
+      console.log(`Info-usuario: ${usuarioDados}` )
     } catch (error) {
       console.error('Erro ao buscar dados do perfil:', error);
       setUsuario(null);
@@ -50,6 +50,12 @@ export default function Perfil() {
   useEffect(() => {
     fetchDadosPerfil();
   }, []);
+
+  useEffect(() => {
+    if (usuario) {
+      console.log('Info-usuario:', usuario);
+    }
+  }, [usuario]); // Runs whenever usuario changes
 
   return (
     <View style={styles.container}>
