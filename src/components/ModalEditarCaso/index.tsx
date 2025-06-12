@@ -1,34 +1,33 @@
 import { Portal, Modal, Text, TextInput, Button } from "react-native-paper";
-import { Alert, ScrollView, StyleProp, ViewStyle } from "react-native";
-import React, { useState } from "react";
+import { Alert, ScrollView, ViewStyle, View } from "react-native";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from '@react-native-picker/picker';
 
-// Definindo a interface para as props do componente
 interface ModalProps {
   visibleEditar: boolean;
   hideModal?: () => void;
-  contentContainerStyle?: StyleProp<ViewStyle>;
+  contentContainerStyle?: ViewStyle;
   idCaso: string | string[];
   casoInfo?: Caso;
 }
 
 interface Caso {
-    _id: string;
+  _id: string;
+  nome: string;
+  local: string;
+  descricao: string;
+  tipo: string;
+  status: string;
+  dataHora?: string;
+  createdAt: string;
+  peritoResponsavel: {
     nome: string;
-    local: string;
-    descricao: string;
-    tipo: string;
-    status: string;
-    dataHora?: string;
-    createdAt: string;
-    peritoResponsavel: {
-      nome: string;
-      email: string;
-    };
+    email: string;
+  };
 }
 
-// Usando React.FC para tipar o componente
 export const ModalEditarCaso: React.FC<ModalProps> = ({
   visibleEditar,
   hideModal,
@@ -36,93 +35,98 @@ export const ModalEditarCaso: React.FC<ModalProps> = ({
   casoInfo
 }) => {
   const [formData, setFormData] = useState({
-    nome: casoInfo?.nome || '',
-    local: casoInfo?.local || '',
-    descricao: casoInfo?.descricao || '',
-    tipo: casoInfo?.tipo || '',
-    status: casoInfo?.status || ''
+    nome: '',
+    local: '',
+    descricao: '',
+    tipo: '',
+    status: ''
   });
 
+  useEffect(() => {
+    if (casoInfo) {
+      setFormData({
+        nome: casoInfo.nome || '',
+        local: casoInfo.local || '',
+        descricao: casoInfo.descricao || '',
+        tipo: casoInfo.tipo || '',
+        status: casoInfo.status || ''
+      });
+    }
+  }, [casoInfo]);
+
   const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const containerStyle: ViewStyle = {
     backgroundColor: "white",
     paddingVertical: 20,
     paddingHorizontal: 25,
-    height: 530,
+    height: 580,
     width: 350,
-    marginHorizontal: "auto",
+    alignSelf: "center",
     borderRadius: 8,
   };
 
   async function putCaso() {
     const validStatuses = ["Em andamento", "Arquivado", "Finalizado"];
     if (!validStatuses.includes(formData.status.trim())) {
-      Alert.alert(
-        'Erro',
-        'O status deve ser "Em andamento", "Arquivado" ou "Finalizado".'
-      );
+      Alert.alert('Erro', 'O status deve ser "Em andamento", "Arquivado" ou "Finalizado".');
       return;
     }
-
-    const token = await AsyncStorage.getItem('token');
-    const usuarioString = await AsyncStorage.getItem('usuario');
-    let peritoId: string | undefined;
-
-    if (usuarioString) {
-      try {
-        const usuario = JSON.parse(usuarioString);
-        peritoId = usuario._id;
-      } catch (error) {
-        console.error('Erro ao parsear usuario do AsyncStorage:', error);
-      }
-    }
-
-    if (!peritoId) {
-      Alert.alert('Erro', 'ID do perito não encontrado');
-      return;
-    }
-
-    const casoId = Array.isArray(idCaso) ? idCaso[0] : idCaso;
-    const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${casoId}`;
-
-    const payload = {
-      nome: formData.nome.trim(),
-      local: formData.local.trim(),
-      descricao: formData.descricao.trim(),
-      tipo: formData.tipo.trim(),
-      status: formData.status.trim(),
-      dataHora: casoInfo?.dataHora || '', // Usa o valor original de casoInfo
-      peritoResponsavel: peritoId
-    };
 
     try {
-      const response = await axios.put(apiUrl, payload, {
+      const token = await AsyncStorage.getItem('token');
+      const usuarioString = await AsyncStorage.getItem('usuario');
+
+      if (!token || !usuarioString) throw new Error('Usuário ou token ausente');
+
+      const usuario = JSON.parse(usuarioString);
+      const peritoId = usuario._id;
+
+      const casoId = Array.isArray(idCaso) ? idCaso[0] : idCaso;
+      const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${casoId}`;
+
+      const payload = {
+        ...formData,
+        nome: formData.nome.trim(),
+        local: formData.local.trim(),
+        descricao: formData.descricao.trim(),
+        tipo: formData.tipo.trim(),
+        status: formData.status.trim(),
+        dataHora: casoInfo?.dataHora || '',
+        peritoResponsavel: peritoId
+      };
+
+      await axios.put(apiUrl, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
+
       Alert.alert('Sucesso', 'Caso atualizado com sucesso!');
       hideModal?.();
-      return response.data;
+
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Falha ao enviar dados editados';
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar caso';
       Alert.alert('Erro', errorMessage);
-      console.error('Erro na requisição:', {
-        status: err.response?.status,
-        message: err.response?.data,
-        headers: err.response?.headers,
-        requestData: payload,
-        url: apiUrl
-      });
+      console.error('Erro ao atualizar caso:', err);
     }
   }
+
+  const tipoList = [
+    "Lesão Corporal",
+    "Identificação por Arcos Dentais",
+    "Exame de Marcas de Mordida",
+    "Coleta de DNA",
+  ];
+
+  const statusList = [
+    "Em andamento",
+    "Arquivado",
+    "Finalizado",
+  ];
 
   return (
     <Portal>
@@ -131,14 +135,13 @@ export const ModalEditarCaso: React.FC<ModalProps> = ({
         onDismiss={hideModal}
         contentContainerStyle={containerStyle}
       >
-        <ScrollView style={{ gap: 10 }}>
+        <ScrollView>
           <Text variant="titleLarge" style={{ marginBottom: 15 }}>
             Editar Caso
           </Text>
 
-          <Text variant="titleSmall" style={{ marginBottom: 5 }}>
-            Nome
-          </Text>
+          {/* Nome */}
+          <Text variant="titleSmall" style={{ marginBottom: 5 }}>Nome</Text>
           <TextInput
             value={formData.nome}
             onChangeText={(text) => handleInputChange('nome', text)}
@@ -146,9 +149,8 @@ export const ModalEditarCaso: React.FC<ModalProps> = ({
             mode="outlined"
           />
 
-          <Text variant="titleSmall" style={{ marginBottom: 5 }}>
-            Local
-          </Text>
+          {/* Local */}
+          <Text variant="titleSmall" style={{ marginBottom: 5 }}>Local</Text>
           <TextInput
             value={formData.local}
             onChangeText={(text) => handleInputChange('local', text)}
@@ -156,9 +158,8 @@ export const ModalEditarCaso: React.FC<ModalProps> = ({
             mode="outlined"
           />
 
-          <Text variant="titleSmall" style={{ marginBottom: 5 }}>
-            Descrição
-          </Text>
+          {/* Descrição */}
+          <Text variant="titleSmall" style={{ marginBottom: 5 }}>Descrição</Text>
           <TextInput
             value={formData.descricao}
             onChangeText={(text) => handleInputChange('descricao', text)}
@@ -168,30 +169,54 @@ export const ModalEditarCaso: React.FC<ModalProps> = ({
             numberOfLines={4}
           />
 
-          <Text variant="titleSmall" style={{ marginBottom: 5 }}>
-            Tipo
-          </Text>
-          <TextInput
-            value={formData.tipo}
-            onChangeText={(text) => handleInputChange('tipo', text)}
-            style={{ marginBottom: 10 }}
-            mode="outlined"
-          />
+          {/* Tipo (Picker) */}
+          <Text variant="titleSmall" style={{ marginBottom: 5 }}>Tipo</Text>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: '#a3a3a3',
+              borderRadius: 4,
+              marginBottom: 10,
+              overflow: 'hidden',
+            }}
+          >
+            <Picker
+              selectedValue={formData.tipo}
+              onValueChange={(itemValue) => handleInputChange('tipo', itemValue)}
+              mode="dropdown"
+            >
+              <Picker.Item label="Selecione o tipo" value="" />
+              {tipoList.map((tipo) => (
+                <Picker.Item key={tipo} label={tipo} value={tipo} />
+              ))}
+            </Picker>
+          </View>
 
-          <Text variant="titleSmall" style={{ marginBottom: 5 }}>
-            Status
-          </Text>
-          <TextInput
-            value={formData.status}
-            onChangeText={(text) => handleInputChange('status', text)}
-            style={{ marginBottom: 10 }}
-            mode="outlined"
-            placeholder="Em andamento, Arquivado ou Finalizado"
-          />
+          {/* Status (Picker) */}
+          <Text variant="titleSmall" style={{ marginBottom: 5 }}>Status</Text>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: '#a3a3a3',
+              borderRadius: 4,
+              marginBottom: 10,
+              overflow: 'hidden',
+            }}
+          >
+            <Picker
+              selectedValue={formData.status}
+              onValueChange={(itemValue) => handleInputChange('status', itemValue)}
+              mode="dropdown"
+            >
+              <Picker.Item label="Selecione o status" value="" />
+              {statusList.map((status) => (
+                <Picker.Item key={status} label={status} value={status} />
+              ))}
+            </Picker>
+          </View>
 
-          <Text variant="titleSmall" style={{ marginBottom: 5 }}>
-            Data e Hora
-          </Text>
+          {/* Data e Hora */}
+          <Text variant="titleSmall" style={{ marginBottom: 5 }}>Data e Hora</Text>
           <Text
             variant="bodyMedium"
             style={{
@@ -205,11 +230,8 @@ export const ModalEditarCaso: React.FC<ModalProps> = ({
             {casoInfo?.dataHora || 'Não informado'}
           </Text>
 
-          <Button
-            mode="contained"
-            onPress={putCaso}
-            style={{ marginTop: 10 }}
-          >
+          {/* Botão de Salvar */}
+          <Button mode="contained" onPress={putCaso} style={{ marginTop: 10 }}>
             Salvar
           </Button>
         </ScrollView>
