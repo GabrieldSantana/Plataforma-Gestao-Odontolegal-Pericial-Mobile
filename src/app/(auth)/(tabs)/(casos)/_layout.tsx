@@ -26,6 +26,7 @@ export default function CasosLayout() {
         name="AdicionarVitima"
         options={{ headerShown: false }}
       />
+
     </Stack>
   );
 }

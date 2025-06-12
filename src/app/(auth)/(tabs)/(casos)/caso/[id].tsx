@@ -54,6 +54,35 @@ export default function Caso() {
     anotacaoAnatomia: string;
   }
 
+  interface Relatorio {
+    _id: string;
+    casoId: string;
+    conteudo: string;
+    arquivoId: string;
+    nomeArquivo: string;
+    assinado: boolean;
+    createdAt: string;
+    __v: number;
+    assinatura: string;
+  }
+
+  interface Laudo {
+    _id: string;
+    evidenciaId: string;
+    titulo: string;
+    conteudo: string;
+    arquivoId: string;
+    nomeArquivo: string;
+    peritoResponsavel: {
+      _id: string;
+      nome: string;
+    };
+    assinado: boolean;
+    createdAt: string;
+    __v: number;
+    assinatura?: string;
+  }
+
   interface PropsCardEvidencia {
     nome: string;
     abrirModal: () => void;
@@ -66,22 +95,27 @@ export default function Caso() {
   const [state, setState] = useState<State>({ open: false });
   const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
   const [vitimas, setVitimas] = useState<Vitima[]>([]);
+  const [relatorios, setRelatorios] = useState<Relatorio[]>([]);
+  const [laudosPorEvidencia, setLaudosPorEvidencia] = useState<{ [evidenciaId: string]: Laudo[] }>({});
   const [carregando, setCarregando] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [visibleMenu, setVisibleMenu] = useState(false);
   const [visibleModal, setVisibleModal] = useState(false);
   const [idModal, setIdModal] = useState('');
   const [tipo, setTipo] = useState('Evidencia');
+  const [visibleModalRelatorios, setVisibleModalRelatorios] = useState(false);
 
   const openMenu = () => setVisibleMenu(true);
   const closeMenu = () => setVisibleMenu(false);
   const mostrarModal = () => setVisibleModal(true);
   const fecharModal = () => setVisibleModal(false);
+  const showModalRelatorios = () => setVisibleModalRelatorios(true);
+  const hideModalRelatorios = () => setVisibleModalRelatorios(false);
 
   const [visible, setVisible] = useState(false);
   const showModalEditarCaso = () => setVisible(true);
   const hideModal = () => setVisible(false);
-  const containerStyle = {backgroundColor: 'white', padding: 20};
+  const containerStyle = { backgroundColor: 'white', padding: 20 };
 
   const onStateChange = ({ open }: { open: boolean }) => setState({ open });
 
@@ -97,7 +131,7 @@ export default function Caso() {
       });
       setCaso(response.data);
     } catch (erro: any) {
-      console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
+      console.error('Erro ao buscar caso:', erro.response?.data || erro.response?.data || erro.message);
     }
   }
 
@@ -113,12 +147,11 @@ export default function Caso() {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Resposta da API de evidências:', response.data);
-      setEvidencias(response.data.evidencias || []); // 🔧 Correção aqui
+      setEvidencias(response.data.evidencias || []);
     } catch (erro: any) {
-      console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
+      console.error('Erro ao buscar evidências:', erro.response?.data || erro.response?.data || erro.message);
     }
   }
-
 
   async function fetchVitimas() {
     try {
@@ -132,14 +165,59 @@ export default function Caso() {
       });
       setVitimas(response.data.vitimas || []);
     } catch (erro: any) {
-      console.error('Erro ao buscar vítimas:', erro.response?.data || erro.message);
+      console.error('Erro ao buscar vítimas:', erro.response?.data || erro.response?.data || erro.message);
     }
+  }
+
+  async function fetchRelatorios() {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error('Token não encontrado');
+        return;
+      }
+      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/relatorios?casoId=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Resposta da API de relatórios:', response.data);
+      setRelatorios(response.data.relatorios || []);
+    } catch (erro: any) {
+      console.error('Erro ao buscar relatórios:', erro.response?.data || erro.response?.data || erro.message);
+    }
+  }
+
+  async function fetchLaudosPorEvidencia(evidenciaId: string) {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error('Token não encontrado');
+        return [];
+      }
+      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/laudos?evidenciaId=${evidenciaId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log(`Resposta da API de laudos para evidenciaId ${evidenciaId}:`, response.data);
+      return response.data.laudos || [];
+    } catch (erro: any) {
+      console.error(`Erro ao buscar laudos para evidenciaId ${evidenciaId}:`, erro.response?.data || erro.response?.data || erro.message);
+      return [];
+    }
+  }
+
+  async function fetchTodosLaudos() {
+    const novosLaudosPorEvidencia: { [evidenciaId: string]: Laudo[] } = {};
+    for (const evidencia of evidencias) {
+      const laudos = await fetchLaudosPorEvidencia(evidencia._id);
+      novosLaudosPorEvidencia[evidencia._id] = laudos;
+    }
+    setLaudosPorEvidencia(novosLaudosPorEvidencia);
   }
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
+      await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas(), fetchRelatorios()]);
+      await fetchTodosLaudos();
     } catch (erro) {
       console.error('Erro ao atualizar:', erro);
     } finally {
@@ -148,12 +226,13 @@ export default function Caso() {
   };
 
   useEffect(() => {
-    console.log('ID do caso:', id); // Debug the id
+    console.log('ID do caso:', id);
     AsyncStorage.setItem('casoId', id as string);
     const fetchData = async () => {
       setCarregando(true);
       try {
-        await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
+        await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas(), fetchRelatorios()]);
+        await fetchTodosLaudos();
       } catch (erro) {
         console.error('Erro ao carregar dados:', erro);
       } finally {
@@ -167,8 +246,17 @@ export default function Caso() {
   }, [id]);
 
   useEffect(() => {
-    console.log('Evidências atualizadas:', evidencias); // Debug updated state
+    if (evidencias.length > 0) {
+      fetchTodosLaudos();
+    }
   }, [evidencias]);
+
+  useEffect(() => {
+    console.log('Evidências atualizadas:', evidencias);
+    console.log('Vítimas atualizadas:', vitimas);
+    console.log('Relatórios atualizados:', relatorios);
+    console.log('Laudos por evidência atualizados:', laudosPorEvidencia);
+  }, [evidencias, vitimas, relatorios, laudosPorEvidencia]);
 
   if (carregando || !caso) {
     return (
@@ -200,6 +288,7 @@ export default function Caso() {
             anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
           >
             <Menu.Item onPress={() => {}} title="Gerar relatório" />
+            <Menu.Item onPress={showModalRelatorios} title="Visualizar relatório e laudos" />
             <Menu.Item onPress={showModalEditarCaso} title="Editar caso" />
             <Menu.Item
               onPress={() => {
@@ -226,9 +315,9 @@ export default function Caso() {
                           },
                         });
                         Alert.alert('Sucesso', 'Caso excluído com sucesso!');
-                        router.back(); // Redireciona para a tela anterior após exclusão
+                        router.back();
                       } catch (err: any) {
-                        console.error('Erro ao excluir caso:', err.response?.data || err.message);
+                        console.error('Erro ao excluir caso:', err.response?.data || err.response?.data || err.message);
                         Alert.alert('Erro', 'Não foi possível excluir o caso. Tente novamente.');
                       }
                     },
@@ -237,7 +326,6 @@ export default function Caso() {
               }}
               title="Excluir caso"
             />
-            
             <Divider />
           </Menu>
         </Appbar.Header>
@@ -272,9 +360,9 @@ export default function Caso() {
               <Text style={styles.label}>Evidências</Text>
               <View style={{ paddingTop: 10 }}>
                 {evidencias.length > 0 ? (
-                  evidencias.map((evidencia) => (
+                  evidencias.map((evidencia, index) => (
                     <CardEvidencia
-                      key={evidencia._id}
+                      key={evidencia._id || `evidencia-${index}`}
                       nome={evidencia.nomeArquivo}
                       abrirModal={mostrarModal}
                       updateIdModel={() => setIdModal(evidencia._id)}
@@ -291,9 +379,9 @@ export default function Caso() {
               <Text style={styles.label}>Vítimas</Text>
               <View style={{ paddingTop: 10 }}>
                 {vitimas.length > 0 ? (
-                  vitimas.map((vitima) => (
+                  vitimas.map((vitima, index) => (
                     <CardEvidencia
-                      key={vitima._id}
+                      key={vitima._id || `vitima-${index}`}
                       nome={vitima.nome}
                       abrirModal={mostrarModal}
                       updateIdModel={() => setIdModal(vitima._id)}
@@ -335,10 +423,80 @@ export default function Caso() {
             ]}
             onStateChange={onStateChange}
           />
+          <Modal
+            visible={visibleModalRelatorios}
+            onDismiss={hideModalRelatorios}
+            contentContainerStyle={containerStyle}
+          >
+            <Text style={styles.modalTitle}>Relatórios e Laudos</Text>
+            <ScrollView>
+              <Text variant="headlineSmall">Relatórios</Text>
+              {relatorios.length > 0 ? (
+                relatorios.map((relatorio, index) => (
+                  <View key={relatorio._id || `relatorio-${index}`} style={styles.relatorioContainer}>
+                    <Text style={styles.relatorioLabel}>Nome do Arquivo:</Text>
+                    <Text style={styles.relatorioValue}>{relatorio.nomeArquivo}</Text>
+                    <Text style={styles.relatorioLabel}>Conteúdo:</Text>
+                    <Text style={styles.relatorioValue}>{relatorio.conteudo}</Text>
+                    <Text style={styles.relatorioLabel}>Assinatura:</Text>
+                    <Text style={styles.relatorioValue}>{relatorio.assinatura || 'Não assinada'}</Text>
+                    <Text style={styles.relatorioLabel}>Data de Criação:</Text>
+                    <Text style={styles.relatorioValue}>
+                      {new Date(relatorio.createdAt).toLocaleString()}
+                    </Text>
+                    <Text style={styles.relatorioLabel}>Assinado:</Text>
+                    <Text style={styles.relatorioValue}>{relatorio.assinado ? 'Sim' : 'Não'}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.relatorioValue}>Nenhum relatório disponível</Text>
+              )}
+
+              <Text variant="headlineSmall" style={styles.sectionTitle}>Laudos</Text>
+              {evidencias.length > 0 ? (
+                evidencias.map((evidencia, index) => (
+                  <View key={evidencia._id || `evidencia-laudos-${index}`}>
+                    <Text style={styles.evidenciaTitle}>
+                      Evidência: {evidencia.nomeArquivo}
+                    </Text>
+                    {laudosPorEvidencia[evidencia._id]?.length > 0 ? (
+                      laudosPorEvidencia[evidencia._id].map((laudo, laudoIndex) => (
+                        <View key={laudo._id || `laudo-${laudoIndex}`} style={styles.relatorioContainer}>
+                          <Text style={styles.relatorioLabel}>Título:</Text>
+                          <Text style={styles.relatorioValue}>{laudo.titulo}</Text>
+                          <Text style={styles.relatorioLabel}>Nome do Arquivo:</Text>
+                          <Text style={styles.relatorioValue}>{laudo.nomeArquivo}</Text>
+                          <Text style={styles.relatorioLabel}>Conteúdo:</Text>
+                          <Text style={styles.relatorioValue}>{laudo.conteudo}</Text>
+                          <Text style={styles.relatorioLabel}>Perito Responsável:</Text>
+                          <Text style={styles.relatorioValue}>{laudo.peritoResponsavel.nome}</Text>
+                          <Text style={styles.relatorioLabel}>Assinatura:</Text>
+                          <Text style={styles.relatorioValue}>{laudo.assinatura || 'Não assinada'}</Text>
+                          <Text style={styles.relatorioLabel}>Data de Criação:</Text>
+                          <Text style={styles.relatorioValue}>
+                            {new Date(laudo.createdAt).toLocaleString()}
+                          </Text>
+                          <Text style={styles.relatorioLabel}>Assinado:</Text>
+                          <Text style={styles.relatorioValue}>{laudo.assinado ? 'Sim' : 'Não'}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <Text style={styles.relatorioValue}>Nenhum laudo disponível para esta evidência</Text>
+                    )}
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.relatorioValue}>Nenhuma evidência disponível</Text>
+              )}
+              <Button mode="contained" onPress={hideModalRelatorios} style={styles.modalButton}>
+                Fechar
+              </Button>
+            </ScrollView>
+          </Modal>
         </Portal>
 
         <ModalEvidencia visibleModal={visibleModal} hideModal={fecharModal} caminho={idModal} tipo={tipo} />
-        <ModalEditarCaso visibleEditar={visible} hideModal={hideModal} idCaso={id} casoInfo={caso}/>
+        <ModalEditarCaso visibleEditar={visible} hideModal={hideModal} idCaso={id} casoInfo={caso} />
       </PaperProvider>
     </SafeAreaProvider>
   );
@@ -387,5 +545,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: 'white',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#1A4D77',
+  },
+  sectionTitle: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  evidenciaTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1A4D77',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  relatorioContainer: {
+    marginBottom: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  relatorioLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1A4D77',
+    marginTop: 4,
+  },
+  relatorioValue: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  modalButton: {
+    marginTop: 20,
+    backgroundColor: '#1A4D77',
   },
 });

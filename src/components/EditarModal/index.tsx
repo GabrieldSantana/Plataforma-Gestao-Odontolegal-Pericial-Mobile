@@ -5,10 +5,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from "react";
 
 interface Evidencia {
-  id?: number;
-  titulo?: string;
-  descricao?: string;
-  imageUrl?: string;
+  _id: string;
+  casoId: string;
+  arquivoId: string;
+  nomeArquivo: string;
+  tipoArquivo: string;
+  tipoEvidencia: string;
+  descricao: string;
+  createdAt: string;
+  __v: number;
 }
 
 interface Odontograma {
@@ -52,7 +57,8 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
     console.log(`Campo ${field} alterado para:`, value);
   };
 
-  const isEvidencia = (data: Evidencia | Vitima): data is Evidencia => 'titulo' in data;
+  // Corrigir type guard para Evidencia
+  const isEvidencia = (data: Evidencia | Vitima): data is Evidencia => 'nomeArquivo' in data;
   const isVitima = (data: Evidencia | Vitima): data is Vitima => 'NIC' in data;
 
   const handleSave = async () => {
@@ -60,8 +66,6 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
       Alert.alert("Erro", "Nenhum dado ou ID disponível para salvar.");
       return;
     }
-
-    Alert.alert('Informações editadas e salvas com sucesso')
 
     setLoading(true);
 
@@ -73,13 +77,17 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
         return;
       }
 
-      const apiUrl = 'titulo' in formData
-        ? `http://192.168.1.62:3000/evidencias/${idEditarModal}`
+      const apiUrl = isEvidencia(formData)
+        ? `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias/${idEditarModal}`
         : `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas/${idEditarModal}`;
 
-      // Filtrar formData com base no type guard
+      // Corrigir mapeamento de cleanedFormData
       const cleanedFormData = isEvidencia(formData)
-        ? { titulo: formData.titulo, descricao: formData.descricao, imageUrl: formData.imageUrl }
+        ? {
+            nomeArquivo: formData.nomeArquivo,
+            descricao: formData.descricao,
+            arquivoId: formData.arquivoId, // Ajuste conforme esperado pela API
+          }
         : {
             NIC: formData.NIC,
             nome: formData.nome,
@@ -102,6 +110,7 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
       });
 
       console.log("Dados salvos com sucesso:", response.data);
+      Alert.alert("Sucesso", "Informações editadas e salvas com sucesso");
       if (onSave) {
         onSave(formData as Evidencia | Vitima);
       }
@@ -112,10 +121,7 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
       if (axiosError.response && axiosError.response.status === 401) {
         Alert.alert("Erro", "Falha na autenticação. Verifique o token ou faça login novamente.");
       } else {
-        Alert.alert(
-          "Erro",
-          
-        );
+        Alert.alert("Erro", "Ocorreu um erro ao salvar os dados. Tente novamente.");
       }
     } finally {
       setLoading(false);
@@ -130,10 +136,10 @@ export function EditarModal({ idEditarModal, conteudo, onSave }: PropsEditarModa
     <ScrollView style={styles.container}>
       {isEvidencia(formData) ? (
         <View>
-          <Text variant="headlineSmall" style={styles.label}>Título:</Text>
+          <Text variant="headlineSmall" style={styles.label}>Nome do Arquivo:</Text>
           <TextInput
-            value={formData.titulo ?? ""}
-            onChangeText={(text) => handleChange('titulo', text)}
+            value={formData.nomeArquivo ?? ""}
+            onChangeText={(text) => handleChange('nomeArquivo', text)}
             style={styles.input}
           />
           <Text variant="headlineSmall" style={styles.label}>Descrição:</Text>
