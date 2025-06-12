@@ -1,7 +1,7 @@
 # GOP - Gestão Odontolegal Pericial (Mobile)
 
 ## Introdução  
-A **GOP - Gestão Odontolegal Pericial** é uma aplicação **mobile fullstack** voltada à gestão de casos forenses odontológicos. O sistema contempla funcionalidades como autenticação, gerenciamento de usuários, evidências, vítimas, laudos e relatórios, com foco em usabilidade em dispositivos móveis.
+A **GOP - Gestão Odontolegal Pericial -** é uma aplicação **mobile fullstack** voltada à gestão de casos forenses odontológicos. O sistema contempla funcionalidades como autenticação, gerenciamento de usuários, evidências, vítimas, laudos e relatórios, com foco em usabilidade em dispositivos móveis.
 
 ## Tecnologias Utilizadas
 
