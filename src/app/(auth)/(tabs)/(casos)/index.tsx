@@ -1,383 +1,188 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router } from 'expo-router';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { Appbar, FAB, Portal, PaperProvider, Menu, Divider, Text, Modal, Button } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StyleSheet, FlatList, SafeAreaView, View } from 'react-native';
+import { Searchbar, Button, Text, FAB, ActivityIndicator } from 'react-native-paper';
+import { CardCaso } from '../../../../components/CardCaso';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CardEvidencia from '../../../../components/CardEvidencia';
-import ModalEvidencia from '../../../../components/ModalEvidencia';
 
-export default function Caso() {
+export default function Casos() {
   interface Caso {
-    _id: string;
-    nome: string;
-    local: string;
-    descricao: string;
-    tipo: string;
+    id: string;
+    title: string;
+    dataDeRegistro: string;
+    responsavel: string;
+    vitima: string;
+    descricao?: string;
     status: string;
-    dataHora?: string;
-    createdAt: string;
-    peritoResponsavel: {
-      nome: string;
-      email: string;
-    };
   }
 
-  interface State {
-    open: boolean;
-  }
+  const [searchQuery, setSearchQuery] = useState('');
+  const [casos, setCasos] = useState<Caso[]>([]);
+  const [filteredCasos, setFilteredCasos] = useState<Caso[]>([]);
+  const [refresh, setRefresh] = useState(false);
 
-  interface Evidencia {
-    _id: string;
-    casoId: string;
-    arquivoId: string;
-    nomeArquivo: string;
-    tipoArquivo: string;
-    tipoEvidencia: string;
-    descricao: string;
-    createdAt: string;
-    __v: number;
-  }
-
-  interface Vitima {
-    _id: string;
-    NIC: string;
-    nome: string;
-    genero: 'Feminino' | 'Masculino';
-    idade: number;
-    cpf: string;
-    endereco: string;
-    etnia: string;
-    odontograma: any;
-    anotacaoAnatomia: string;
-  }
-
-  interface PropsCardEvidencia {
-    nome: string;
-    abrirModal: () => void;
-    updateIdModel: (id: string) => void;
-    updateTipo: (tipo: string) => void;
-  }
-
-  const { id } = useLocalSearchParams();
-  const [caso, setCaso] = useState<Caso | null>(null);
-  const [state, setState] = useState<State>({ open: false });
-  const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
-  const [vitimas, setVitimas] = useState<Vitima[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [visibleMenu, setVisibleMenu] = useState(false);
-  const [visibleModal, setVisibleModal] = useState(false);
-  const [idModal, setIdModal] = useState('');
-  const [tipo, setTipo] = useState('Evidencia');
-
-  const openMenu = () => setVisibleMenu(true);
-  const closeMenu = () => setVisibleMenu(false);
-  const mostrarModal = () => setVisibleModal(true);
-  const fecharModal = () => setVisibleModal(false);
-
-  const onStateChange = ({ open }: { open: boolean }) => setState({ open });
-
-  async function fetchCaso() {
+  async function fetchCasos() {
     try {
       const token = await AsyncStorage.getItem('token');
+
       if (!token) {
-        console.error('Token não encontrado');
+        console.log('Token não encontrado');
         return;
       }
-      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setCaso(response.data);
-    } catch (erro: any) {
-      console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
-    }
-  }
 
-  async function fetchEvidencias() {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        console.error('Token não encontrado');
-        return;
-      }
-      console.log('Buscando evidências para casoId:', id);
-      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/evidencias?casoId=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.get("https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },    
       });
-      console.log('Resposta da API de evidências:', response.data);
-      setEvidencias(response.data.evidencias || []);
-    } catch (erro: any) {
-      console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
-    }
-  }
 
-  async function fetchVitimas() {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        console.error('Token não encontrado');
-        return;
-      }
-      const response = await axios.get(`https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/vitimas?casoId=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setVitimas(response.data.vitimas || []);
-    } catch (erro: any) {
-      console.error('Erro ao buscar vítimas:', erro.response?.data || erro.message);
-    }
-  }
+      const casosMapeados: Caso[] = response.data.casos.reverse().map((caso: any) => ({
+        id: caso._id,
+        title: caso.nome,
+        dataDeRegistro: new Date(caso.createdAt).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }),
+        responsavel: caso.peritoResponsavel?.nome ?? 'Desconhecido',
+        vitima: caso.vitima ?? '',
+        descricao: caso.descricao ?? '',
+        status: caso.status ?? 'Em andamento',
+      }));
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
+      setCasos(casosMapeados);
+      setFilteredCasos(casosMapeados); // Inicializa com todos os casos
     } catch (erro) {
-      console.error('Erro ao atualizar:', erro);
-    } finally {
-      setRefreshing(false);
+      console.error('Erro ao buscar casos:', erro);
     }
-  };
-
-  useEffect(() => {
-    console.log('ID do caso:', id);
-    AsyncStorage.setItem('casoId', id as string);
-    const fetchData = async () => {
-      setCarregando(true);
-      try {
-        await Promise.all([fetchCaso(), fetchEvidencias(), fetchVitimas()]);
-      } catch (erro) {
-        console.error('Erro ao carregar dados:', erro);
-      } finally {
-        setCarregando(false);
-      }
-    };
-    fetchData();
-    return () => {
-      AsyncStorage.removeItem('casoId');
-    };
-  }, [id]);
-
-  useEffect(() => {
-    console.log('Evidências atualizadas:', evidencias);
-  }, [evidencias]);
-
-  if (carregando || !caso) {
-    return (
-      <SafeAreaProvider>
-        <PaperProvider>
-          <Appbar.Header mode="small">
-            <Appbar.BackAction onPress={() => router.back()} />
-            <Appbar.Content title="Carregando..." />
-          </Appbar.Header>
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#1A4D77" />
-            <Text>Carregando dados do caso...</Text>
-          </View>
-        </PaperProvider>
-      </SafeAreaProvider>
-    );
   }
+
+  // Função de filtro por palavras
+  useEffect(() => {
+    const filtered = casos.filter(caso =>
+      caso.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCasos(filtered);
+  }, [searchQuery, casos]);
+
+  useEffect(() => {
+    fetchCasos();
+  }, []);
 
   return (
-    <SafeAreaProvider>
-      <PaperProvider>
-        <Appbar.Header mode="small">
-          <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content title={caso.nome} />
-          <Menu
-            style={{ top: 20, zIndex: 1000 }}
-            visible={visibleMenu}
-            onDismiss={closeMenu}
-            anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
-          >
-            <Menu.Item onPress={() => {}} title="Gerar relatório" />
-            <Menu.Item onPress={() => {}} title="Editar caso" />
-            <Menu.Item
-              onPress={() => {
-                Alert.alert('Excluindo o caso', 'Você realmente deseja excluir o caso?', [
-                  {
-                    text: 'Cancelar',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                  },
-                  {
-                    text: 'Excluir caso',
-                    onPress: async () => {
-                      try {
-                        const token = await AsyncStorage.getItem('token');
-                        if (!token) {
-                          console.error('Token não encontrado');
-                          Alert.alert('Erro', 'Token de autenticação não encontrado.');
-                          return;
-                        }
-                        const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`;
-                        await axios.delete(apiUrl, {
-                          headers: {
-                            Authorization: `Bearer ${token}`,
-                          },
-                        });
-                        await AsyncStorage.setItem('casosUpdated', 'true'); // Sinaliza que os casos precisam ser atualizados
-                        Alert.alert('Sucesso', 'Caso excluído com sucesso!');
-                        router.back();
-                      } catch (err: any) {
-                        console.error('Erro ao excluir caso:', err.response?.data || err.message);
-                        Alert.alert('Erro', 'Não foi possível excluir o caso. Tente novamente.');
-                      }
-                    },
-                  },
-                ]);
-              }}
-              title="Excluir caso"
-            />
-            <Divider />
-          </Menu>
-        </Appbar.Header>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.navbarContainer}>
+        <Searchbar
+          placeholder="Pesquise um caso"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          mode="bar"
+          style={{width: 335, height: 55, backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
+        />
+      </View>
+      <View style={styles.contentContainer}>
+        <Text variant="headlineMedium" style={styles.titulo}>
+          Visualização dos Casos
+        </Text>
 
-        <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1A4D77']} />
-          }
+        <Button
+          style={styles.btnFiltrar}
+          icon="filter"
+          mode="outlined"
+          onPress={() => console.log('Botão filtrar acionado')}
         >
-          <View style={styles.casoInfoContainer}>
-            <Text style={styles.title} variant="headlineSmall">{caso.nome}</Text>
-            <View>
-              <Text style={styles.label}>Status:</Text>
-              <Text style={styles.value}>{caso.status}</Text>
-              <Text style={styles.label}>Local:</Text>
-              <Text style={styles.value}>{caso.local}</Text>
-              <Text style={styles.label}>Tipo:</Text>
-              <Text style={styles.value}>{caso.tipo}</Text>
-              <Text style={styles.label}>Data e Hora:</Text>
-              <Text style={styles.value}>
-                {caso.dataHora ? new Date(caso.dataHora).toLocaleString() : 'N/A'}
-              </Text>
-              <Text style={styles.label}>Perito Responsável:</Text>
-              <Text style={styles.value}>
-                {caso.peritoResponsavel.nome} ({caso.peritoResponsavel.email})
-              </Text>
-            </View>
-            <Text style={styles.label}>Descrição:</Text>
-            <Text style={styles.description}>{caso.descricao}</Text>
+          Filtrar
+        </Button>
 
-            <View style={{ marginTop: 16 }}>
-              <Text style={styles.label}>Evidências</Text>
-              <View style={{ paddingTop: 10 }}>
-                {evidencias.length > 0 ? (
-                  evidencias.map((evidencia) => (
-                    <CardEvidencia
-                      key={evidencia._id}
-                      nome={evidencia.nomeArquivo}
-                      abrirModal={mostrarModal}
-                      updateIdModel={() => setIdModal(evidencia._id)}
-                      updateTipo={() => setTipo('Evidencia')}
-                    />
-                  ))
-                ) : (
-                  <Text style={styles.value}>Nenhuma evidência disponível</Text>
-                )}
-              </View>
-            </View>
-
-            <View style={{ marginTop: 16 }}>
-              <Text style={styles.label}>Vítimas</Text>
-              <View style={{ paddingTop: 10 }}>
-                {vitimas.length > 0 ? (
-                  vitimas.map((vitima) => (
-                    <CardEvidencia
-                      key={vitima._id}
-                      nome={vitima.nome}
-                      abrirModal={mostrarModal}
-                      updateIdModel={() => setIdModal(vitima._id)}
-                      updateTipo={() => setTipo('Vitima')}
-                    />
-                  ))
-                ) : (
-                  <Text style={styles.value}>Nenhuma vítima disponível</Text>
-                )}
-              </View>
-            </View>
+        {!filteredCasos || filteredCasos.length === 0 ? (
+          <View style={styles.carregando}>
+            {casos.length === 0 ? (
+              <>
+                <ActivityIndicator size={'large'} theme={{ colors: { primary: '#1A4D77' } }} />
+                <Text variant='titleMedium' style={styles.textCarregando}>Carregando casos ...</Text>
+              </>
+            ) : (
+              <Text variant='titleMedium' style={styles.textCarregando}>Nenhum caso encontrado</Text>
+            )}
           </View>
-        </ScrollView>
-
-        <Portal>
-          <FAB.Group
-            open={state.open}
-            visible
-            color="white"
-            fabStyle={{ backgroundColor: '#1A4D77' }}
-            style={styles.fab}
-            backdropColor="rgba(255, 255, 255, 0.9)"
-            icon={state.open ? 'note' : 'plus'}
-            actions={[
-              {
-                icon: 'pencil',
-                label: 'Adicionar vítima',
-                onPress: () => router.navigate('../AdicionarVitima'),
-                style: { backgroundColor: '#1A4D77' },
-                color: 'white',
-              },
-              {
-                icon: 'pen',
-                label: 'Adicionar evidência',
-                onPress: () => router.navigate('../AdicionarEvidencia'),
-                style: { backgroundColor: '#1A4D77' },
-                color: 'white',
-              },
-            ]}
-            onStateChange={onStateChange}
+        ) : (
+          <FlatList
+            data={filteredCasos}
+            renderItem={({ item }) => (
+              <CardCaso
+                title={item.title}
+                dateRegister={item.dataDeRegistro}
+                vitima={item.vitima}
+                responsavel={item.responsavel}
+                casoRota={item.id}
+                status={item.status}
+              />
+            )}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.flatListContent}
+            refreshing={refresh}
+            onRefresh={async () => {
+              setRefresh(true);
+              await fetchCasos();
+              setRefresh(false);
+            }}
           />
-        </Portal>
+        )}
 
-        <ModalEvidencia visibleModal={visibleModal} hideModal={fecharModal} caminho={idModal} tipo={tipo} />
-      </PaperProvider>
-    </SafeAreaProvider>
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          label='Adicionar caso'
+          color='white'
+          onPress={() => router.navigate("./AdicionarCaso")}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  casoInfoContainer: {
+  container: {
     flex: 1,
+    backgroundColor: 'white',
+  },
+  navbarContainer: {
+    paddingHorizontal: 12,
     paddingTop: 20,
-    paddingBottom: 80,
-    paddingLeft: 30,
-    zIndex: -1,
-    width: '95%',
+    gap: 20,
   },
-  title: {
-    fontWeight: 'bold',
-    color: '#111E5F',
+  btnFiltrar: {
+    marginLeft: 20,
+    width: 100,
     marginBottom: 12,
-    textAlign: 'left',
   },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 6,
-    color: '#1A4D77',
+  titulo: {
+    textAlign: 'center',
+    paddingVertical: 15,
+    color: '#111E5F',
+    fontWeight: '700',
   },
-  value: {
-    fontSize: 16,
-    marginBottom: 6,
-    color: '#333',
+  contentContainer: {
+    flex: 1,
   },
-  description: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'justify',
-    color: '#333',
+  flatListContent: {
+    paddingBottom: 30,
   },
   fab: {
+    position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
+    backgroundColor: '#1A4D77',
   },
-  loadingContainer: {
+  carregando: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
+    gap: 25,
   },
+  textCarregando: {
+    color: 'darkblue',
+  }
 });

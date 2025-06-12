@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router'; // Adicione Redirect
 import { View, Text } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,9 +15,8 @@ interface Usuario {
 
 export default function TabLayout() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Estado para controlar o carregamento
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Função para buscar dados do perfil
   const fetchDadosAdm = async (): Promise<void> => {
     try {
       const json = await AsyncStorage.getItem('usuario');
@@ -30,7 +29,7 @@ export default function TabLayout() {
     } catch (error) {
       console.error('Erro ao buscar dados do perfil:', error);
     } finally {
-      setIsLoading(false); // Finaliza o carregamento
+      setIsLoading(false);
     }
   };
 
@@ -38,7 +37,6 @@ export default function TabLayout() {
     fetchDadosAdm();
   }, []);
 
-  // Exibe um componente de carregamento enquanto os dados não estão prontos
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -47,13 +45,14 @@ export default function TabLayout() {
     );
   }
 
+  // Redireciona para (casos)/index.tsx após carregar os dados
+
+
   return (
     <View style={{ flex: 1 }}>
-      {/* Cabeçalho personalizado */}
       <View style={{ backgroundColor: '#111E5F', width: '100%', height: 60, justifyContent: 'center', alignItems: 'center' }}>
         <Text style={{ color: 'white', fontSize: 23, fontWeight: 'bold' }}>GOP</Text>
       </View>
-      {/* Tabs */}
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: 'blue',
@@ -86,7 +85,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <FontAwesome size={28} name="bar-chart" color={color} />,
           }}
         />
-        {usuario?.cargo === 'admin' && ( // Renderiza apenas se for admin
+        {usuario?.cargo === 'admin' && (
           <Tabs.Screen
             name="(adm)"
             options={{

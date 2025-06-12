@@ -27,6 +27,7 @@ export default function Perfil() {
       }
       const usuarioDados: Usuario = JSON.parse(json);
       setUsuario(usuarioDados);
+      console.log(`Info-usuario: ${usuario}` )
     } catch (error) {
       console.error('Erro ao buscar dados do perfil:', error);
       setUsuario(null);
