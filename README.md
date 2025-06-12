@@ -120,7 +120,7 @@ Plataforma-Gestao-Odontolegal-Pericial-Mobile/
 
 ### 1. Clone o repositório
 
-```bash
+bash
 git clone <url-do-repositorio>
 cd gestao-odontolegal-pericial-app
 
