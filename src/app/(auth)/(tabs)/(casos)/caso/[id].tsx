@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardEvidencia from '../../../../../components/CardEvidencia';
 import ModalEvidencia from '../../../../../components/ModalEvidencia';
+import { ModalEditarCaso } from '../../../../../components/ModalEditarCaso';
 
 export default function Caso() {
   interface Caso {
@@ -76,6 +77,11 @@ export default function Caso() {
   const closeMenu = () => setVisibleMenu(false);
   const mostrarModal = () => setVisibleModal(true);
   const fecharModal = () => setVisibleModal(false);
+
+  const [visible, setVisible] = useState(false);
+  const showModalEditarCaso = () => setVisible(true);
+  const hideModal = () => setVisible(false);
+  const containerStyle = {backgroundColor: 'white', padding: 20};
 
   const onStateChange = ({ open }: { open: boolean }) => setState({ open });
 
@@ -194,7 +200,7 @@ export default function Caso() {
             anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
           >
             <Menu.Item onPress={() => {}} title="Gerar relatório" />
-            <Menu.Item onPress={() => {}} title="Editar caso" />
+            <Menu.Item onPress={showModalEditarCaso} title="Editar caso" />
             <Menu.Item
               onPress={() => {
                 Alert.alert('Excluindo o caso', 'Você realmente deseja excluir o caso?', [
@@ -332,6 +338,7 @@ export default function Caso() {
         </Portal>
 
         <ModalEvidencia visibleModal={visibleModal} hideModal={fecharModal} caminho={idModal} tipo={tipo} />
+        <ModalEditarCaso visibleEditar={visible} hideModal={hideModal} idCaso={id} casoInfo={caso}/>
       </PaperProvider>
     </SafeAreaProvider>
   );
