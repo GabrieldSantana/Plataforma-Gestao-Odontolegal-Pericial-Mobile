@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, ActivityIndicator, RefreshControl } from 'react-native';
+import { ScrollView, StyleSheet, View, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { Appbar, FAB, Portal, PaperProvider, Menu, Divider, Text, Modal, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -195,6 +195,43 @@ export default function Caso() {
           >
             <Menu.Item onPress={() => {}} title="Gerar relatório" />
             <Menu.Item onPress={() => {}} title="Editar caso" />
+            <Menu.Item
+              onPress={() => {
+                Alert.alert('Excluindo o caso', 'Você realmente deseja excluir o caso?', [
+                  {
+                    text: 'Cancelar',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Excluir caso',
+                    onPress: async () => {
+                      try {
+                        const token = await AsyncStorage.getItem('token');
+                        if (!token) {
+                          console.error('Token não encontrado');
+                          Alert.alert('Erro', 'Token de autenticação não encontrado.');
+                          return;
+                        }
+                        const apiUrl = `https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos/${id}`;
+                        await axios.delete(apiUrl, {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        });
+                        Alert.alert('Sucesso', 'Caso excluído com sucesso!');
+                        router.back(); // Redireciona para a tela anterior após exclusão
+                      } catch (err: any) {
+                        console.error('Erro ao excluir caso:', err.response?.data || err.message);
+                        Alert.alert('Erro', 'Não foi possível excluir o caso. Tente novamente.');
+                      }
+                    },
+                  },
+                ]);
+              }}
+              title="Excluir caso"
+            />
+            
             <Divider />
           </Menu>
         </Appbar.Header>
