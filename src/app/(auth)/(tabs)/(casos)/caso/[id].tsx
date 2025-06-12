@@ -104,6 +104,7 @@ export default function Caso() {
   const [idModal, setIdModal] = useState('');
   const [tipo, setTipo] = useState('Evidencia');
   const [visibleModalRelatorios, setVisibleModalRelatorios] = useState(false);
+  const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
 
   const openMenu = () => setVisibleMenu(true);
   const closeMenu = () => setVisibleMenu(false);
@@ -131,7 +132,7 @@ export default function Caso() {
       });
       setCaso(response.data);
     } catch (erro: any) {
-      console.error('Erro ao buscar caso:', erro.response?.data || erro.response?.data || erro.message);
+      console.error('Erro ao buscar caso:', erro.response?.data || erro.message);
     }
   }
 
@@ -149,7 +150,7 @@ export default function Caso() {
       console.log('Resposta da API de evidências:', response.data);
       setEvidencias(response.data.evidencias || []);
     } catch (erro: any) {
-      console.error('Erro ao buscar evidências:', erro.response?.data || erro.response?.data || erro.message);
+      console.error('Erro ao buscar evidências:', erro.response?.data || erro.message);
     }
   }
 
@@ -165,7 +166,7 @@ export default function Caso() {
       });
       setVitimas(response.data.vitimas || []);
     } catch (erro: any) {
-      console.error('Erro ao buscar vítimas:', erro.response?.data || erro.response?.data || erro.message);
+      console.error('Erro ao buscar vítimas:', erro.response?.data || erro.message);
     }
   }
 
@@ -182,7 +183,7 @@ export default function Caso() {
       console.log('Resposta da API de relatórios:', response.data);
       setRelatorios(response.data.relatorios || []);
     } catch (erro: any) {
-      console.error('Erro ao buscar relatórios:', erro.response?.data || erro.response?.data || erro.message);
+      console.error('Erro ao buscar relatórios:', erro.response?.data || erro.message);
     }
   }
 
@@ -199,7 +200,7 @@ export default function Caso() {
       console.log(`Resposta da API de laudos para evidenciaId ${evidenciaId}:`, response.data);
       return response.data.laudos || [];
     } catch (erro: any) {
-      console.error(`Erro ao buscar laudos para evidenciaId ${evidenciaId}:`, erro.response?.data || erro.response?.data || erro.message);
+      console.error(`Erro ao buscar laudos para evidenciaId ${evidenciaId}:`, erro.response?.data || erro.message);
       return [];
     }
   }
@@ -211,6 +212,52 @@ export default function Caso() {
       novosLaudosPorEvidencia[evidencia._id] = laudos;
     }
     setLaudosPorEvidencia(novosLaudosPorEvidencia);
+  }
+
+  async function gerarRelatorio() {
+    setGerandoRelatorio(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const usuarioString = await AsyncStorage.getItem('usuario');
+      if (!token || !usuarioString) {
+        console.error('Token ou usuário não encontrado');
+        Alert.alert('Erro', 'Token ou informações do usuário não encontrados.');
+        return;
+      }
+
+      const usuario = JSON.parse(usuarioString);
+      const usuarioId = usuario._id;
+
+      if (!caso) {
+        console.error('Caso não carregado');
+        Alert.alert('Erro', 'Informações do caso não disponíveis.');
+        return;
+      }
+
+      const response = await axios.post(
+        'https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/relatorios/',
+        {
+          casoId: id,
+          titulo: caso.nome,
+          peritoResponsavel: usuarioId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Relatório gerado com sucesso:', response.data);
+      Alert.alert('Sucesso', 'Relatório gerado com sucesso!');
+      await fetchRelatorios();
+    } catch (erro: any) {
+      console.error('Erro ao gerar relatório:', erro.response?.data || erro.message);
+      Alert.alert('Erro', 'Não foi possível gerar o relatório. Tente novamente.');
+    } finally {
+      setGerandoRelatorio(false);
+    }
   }
 
   const onRefresh = async () => {
@@ -287,7 +334,12 @@ export default function Caso() {
             onDismiss={closeMenu}
             anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} />}
           >
-            <Menu.Item onPress={() => {}} title="Gerar relatório" />
+            <Menu.Item
+              onPress={gerarRelatorio}
+              title="Gerar relatório"
+              disabled={gerandoRelatorio}
+              trailingIcon={() => (gerandoRelatorio ? <ActivityIndicator size="small" color="#1A4D77" /> : null)}
+            />
             <Menu.Item onPress={showModalRelatorios} title="Visualizar relatório e laudos" />
             <Menu.Item onPress={showModalEditarCaso} title="Editar caso" />
             <Menu.Item
@@ -317,7 +369,7 @@ export default function Caso() {
                         Alert.alert('Sucesso', 'Caso excluído com sucesso!');
                         router.back();
                       } catch (err: any) {
-                        console.error('Erro ao excluir caso:', err.response?.data || err.response?.data || err.message);
+                        console.error('Erro ao excluir caso:', err.response?.data || err.message);
                         Alert.alert('Erro', 'Não foi possível excluir o caso. Tente novamente.');
                       }
                     },
