@@ -29,9 +29,9 @@ A **GOP - Gestão Odontolegal Pericial** é uma aplicação **mobile fullstack**
 ## Estrutura de Pastas
 
 gestao-odontolegal-pericial-app/
-├── .gitignore
-├── app.json
-├── casos.json
+├── .gitignore/
+├── app.json/
+├── casos.json/
 ├── package.json
 ├── package-lock.json
 ├── tsconfig.json
