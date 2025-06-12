@@ -25,7 +25,9 @@ A **GOP - Gestão Odontolegal Pericial** é uma aplicação **mobile fullstack**
 - **JWT** – autenticação via token
 
 ## Estrutura de Pastas
+
 ```
+
 Plataforma-Gestao-Odontolegal-Pericial-Mobile/
 ├── .gitignore/
 ├── app.json/
@@ -33,7 +35,6 @@ Plataforma-Gestao-Odontolegal-Pericial-Mobile/
 ├── package.json
 ├── package-lock.json
 ├── tsconfig.json
-├── babel.config.js
 ├── README.md
 │
 └── src/
@@ -41,52 +42,63 @@ Plataforma-Gestao-Odontolegal-Pericial-Mobile/
     │   ├── index.tsx
     │   ├── auth/
     │   │   ├── tabs/
+    │   │   │   ├── dashboard.tsx
+    │   │   │   ├── perfil.tsx
+    │   │   │   └── layout.tsx
     │   │   ├── adm/
+    │   │   │   ├── adicionarUsuario.tsx
+    │   │   │   └── index.tsx
     │   │   └── casos/
-    │   │       ├── dashboard/
-    │   │       │   ├── layout.tsx
-    │   │       │   ├── perfil.tsx
-    │   │       │   └── index.tsx
-    │   ├── dashboard/
-    │   │   └── index.tsx
-    │   ├── casos/
-    │   │   ├── criar/
-    │   │   │   └── index.tsx
-    │   │   ├── visualizar/
-    │   │   │   └── index.tsx
-    │   │   └── [id]/
+    │   │       ├── adicionarCaso.tsx
+    │   │       ├── adicionarEvidencia.tsx
+    │   │       ├── adicionarVitima.tsx
+    │   │       ├── layout.tsx
     │   │       └── index.tsx
-    │   └── usuarios/
-    │       ├── index.tsx
-    │       └── adicionar.tsx
-    ├── api/
-    │   ├── index.ts
-    │   ├── casosService.ts
-    │   ├── usuariosService.ts
-    │   └── evidenciasService.ts
     ├── components/
-    │   ├── Botao.tsx
-    │   ├── CardCaso.tsx
-    │   ├── ModalEvidencia.tsx
-    │   └── InputPadrao.tsx
+    │   ├── cardevidencia/
+    │   ├── commom/
+    │   │   └── inputfield.tsx
+    │   ├── editalmodal/
+    │   │   └── index.tsx
+    │   ├── formularios/
+    │   │   ├── forminput.tsx
+    │   │   ├── imageuploader.tsx
+    │   │   ├── locationmap.tsx
+    │   │   └── pickerselect.tsx
+    │   ├── modaleevidencia/
+    │   │   └── index.tsx
+    │   ├── odontogramainput/
+    │   │   └── odontogramainput.tsx
+    │   ├── user/
+    │   │   ├── adduserbutton.tsx
+    │   │   └── usercard.tsx
+    │   ├── CardCaso/
+    │   │   └── index.tsx
+    │   ├── ModalEvidencia/
+    │   │   └── index.tsx
+    │   └── InputPadrao/
+    │       └── index.tsx
     ├── hooks/
+    │   ├── useDatatimepicker.ts
+    │   ├── useimagepicker.ts
     │   ├── useAuth.ts
     │   ├── useGeoLocation.ts
     │   └── useForm.ts
     ├── interfaces/
+    │   ├── Iuser.ts
     │   ├── Caso.ts
-    │   ├── Usuario.ts
     │   └── Evidencia.ts
     ├── lib/
-    │   ├── auth.ts
-    │   └── validators.ts
+    │   ├── geocode.ts
+    │   └── validate.ts
     ├── styles/
-    │   ├── tailwind.css
-    │   └── theme.ts
+    │   ├── adicionarusuarios.styles.ts
+    │   ├── cadastronovocaso.styles.ts
+    │   ├── globalstyles.ts
+    │   ├── perfil.styles.ts
+    │   └── vitima.styles.ts
     └── utils/
-        ├── formatData.ts
-        ├── fileHelper.ts
-        └── geoHelper.ts
+        └── fileHelpers.ts
 
 ```
 
