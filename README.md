@@ -132,8 +132,11 @@ Plataforma-Gestao-Odontolegal-Pericial-Mobile/
 
 ### 1. Clone o repositório
 
-bash
-git Plataforma-Gestao-Odontolegal-Pericial-Mobile
+#bash
+1. git clone [Plataforma-Gestao-Odontolegal-Pericial-Mobile](https://github.com/GabrieldSantana/Plataforma-Gestao-Odontolegal-Pericial-Mobile.git)
+2. npm install
+3. npx expo start (em caso de uso com o app expo go)
+
 
 ##  Documentação da API
 
@@ -144,7 +147,6 @@ Acesse a documentação da API REST via Swagger:
 
 ## Contribuidores
 
-- Gabriel de Santana  
 - João Gabriel
 - Kethylle Cury  
 - Henrique Fernandes  
