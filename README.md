@@ -3,8 +3,6 @@
 ## Introdução  
 A **GOP - Gestão Odontolegal Pericial** é uma aplicação **mobile fullstack** voltada à gestão de casos forenses odontológicos. O sistema contempla funcionalidades como autenticação, gerenciamento de usuários, evidências, vítimas, laudos e relatórios, com foco em usabilidade em dispositivos móveis.
 
---
-
 ## Tecnologias Utilizadas
 
 ### Frontend Mobile
@@ -27,7 +25,7 @@ A **GOP - Gestão Odontolegal Pericial** é uma aplicação **mobile fullstack**
 - **JWT** – autenticação via token
 
 ## Estrutura de Pastas
-'''
+```
 gestao-odontolegal-pericial-app/
 ├── .gitignore/
 ├── app.json/
@@ -89,7 +87,7 @@ gestao-odontolegal-pericial-app/
 ├── formatData.ts
 ├── fileHelper.ts
 └── geoHelper.ts
-'''
+```
 
 ## Bibliotecas Utilizadas (principais)
 
@@ -117,8 +115,6 @@ gestao-odontolegal-pericial-app/
 - `react-native-svg`
 - `react-native-chart-kit`
 
----
-
 ## Instalação do Projeto
 
 ### 1. Clone o repositório
@@ -133,7 +129,6 @@ Acesse a documentação da API REST via Swagger:
 
 [https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api-docs](https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api-docs)
 
---
 
 ## Contribuidores
 
