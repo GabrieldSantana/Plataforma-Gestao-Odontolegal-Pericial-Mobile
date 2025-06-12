@@ -54,6 +54,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editarHabilitado, setEditarHabilitado] = useState(false);
+  const [gerandoLaudo, setGerandoLaudo] = useState(false);
   const id = caminho;
 
   const containerStyle: ViewStyle = {
@@ -64,7 +65,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
     marginHorizontal: 'auto',
     borderRadius: 8,
   };
-  
+
   const fetchDadosModal = async () => {
     const token = await AsyncStorage.getItem('token');
 
@@ -75,11 +76,13 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
         const response = await axios.get(apiUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setEvidencia(response.data.evidencia);
+        const evidenciaData = response.data.evidencia;
+        console.log('Dados da evidência recebidos:', evidenciaData); // Log para depuração
+        setEvidencia(evidenciaData);
         setError(null);
       } catch (err) {
         setError('Falha ao buscar evidência');
-        console.error(err);
+        console.error('Erro ao buscar evidência:', err);
       } finally {
         setLoading(false);
       }
@@ -94,7 +97,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
         setError(null);
       } catch (err) {
         setError('Falha ao buscar vítima');
-        console.error(err);
+        console.error('Erro ao buscar vítima:', err);
       } finally {
         setLoading(false);
       }
@@ -131,7 +134,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                 onDeleteSuccess?.();
               } catch (err) {
                 setError('Falha ao excluir evidência');
-                console.error(err);
+                console.error('Erro ao excluir evidência:', err);
               } finally {
                 setLoading(false);
               }
@@ -150,7 +153,7 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                 onDeleteSuccess?.();
               } catch (err) {
                 setError('Falha ao excluir vítima');
-                console.error(err);
+                console.error('Erro ao excluir vítima:', err);
               } finally {
                 setLoading(false);
               }
@@ -164,6 +167,61 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
   const toggleEditar = () => {
     setEditarHabilitado(!editarHabilitado);
     fetchDadosModal();
+  };
+
+  const gerarLaudo = async () => {
+    setGerandoLaudo(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const usuarioString = await AsyncStorage.getItem('usuario');
+      if (!token || !usuarioString) {
+        console.error('Token ou usuário não encontrado');
+        Alert.alert('Erro', 'Token ou informações do usuário não encontrados.');
+        return;
+      }
+
+      const usuario = JSON.parse(usuarioString);
+      const usuarioId = usuario._id;
+
+      if (!evidencia) {
+        console.error('Evidência não carregada');
+        Alert.alert('Erro', 'Evidência não carregada.');
+        return;
+      }
+
+      if (!evidencia._id) {
+        console.error('ID da evidência não disponível');
+        Alert.alert('Erro', 'ID da evidência não disponível.');
+        return;
+      }
+
+      const titulo = evidencia.tituloEvidencia || 'Laudo Forense'; // Fallback para título
+      console.log('Gerando laudo com dados:', { evidenciaId: evidencia._id, titulo, peritoResponsavel: usuarioId }); // Log para depuração
+
+      const response = await axios.post(
+        'https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/laudos/',
+        {
+          evidenciaId: evidencia._id,
+          titulo,
+          peritoResponsavel: usuarioId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Laudo gerado com sucesso:', response.data);
+      Alert.alert('Sucesso', 'Laudo gerado com sucesso!');
+      await fetchDadosModal();
+    } catch (erro: any) {
+      console.error('Erro ao gerar laudo:', erro.response?.data || erro.message);
+      Alert.alert('Erro', 'Não foi possível gerar o laudo. Tente novamente.');
+    } finally {
+      setGerandoLaudo(false);
+    }
   };
 
   useEffect(() => {
@@ -199,8 +257,9 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
                 mode="contained"
                 style={{ borderRadius: 6, marginTop: 10 }}
                 buttonColor="#1A4D77"
-                disabled={editarHabilitado}
-                onPress={() => console.log('Botão gerar laudo pressionado')}
+                disabled={editarHabilitado || gerandoLaudo || loading}
+                loading={gerandoLaudo}
+                onPress={gerarLaudo}
               >
                 Gerar Laudo
               </Button>
@@ -284,61 +343,57 @@ export default function ModalEvidencia({ visibleModal, hideModal, caminho, tipo,
 
             {editarHabilitado ? (
               <EditarModal idEditarModal={id} conteudo={vitima} />
-            ) : 
-            
-            (
-            <ScrollView>
-              {loading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color="#1A4D77" />
-                </View>
-              ) : error ? (
-                <View style={styles.errorContainer}>
-                  <Text style={styles.errorText}>{error}</Text>
-                  <Button onPress={fetchDadosModal}>Tentar novamente</Button>
-                </View>
-              ) : vitima ? (
-                <>
-                  <Text variant="headlineSmall" style={styles.title}>NIC:</Text>
-                  <Text style={styles.text}>{vitima.NIC || 'Sem NIC'}</Text>
+            ) : (
+              <ScrollView>
+                {loading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#1A4D77" />
+                  </View>
+                ) : error ? (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                    <Button onPress={fetchDadosModal}>Tentar novamente</Button>
+                  </View>
+                ) : vitima ? (
+                  <>
+                    <Text variant="headlineSmall" style={styles.title}>NIC:</Text>
+                    <Text style={styles.text}>{vitima.NIC || 'Sem NIC'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Nome:</Text>
-                  <Text style={styles.text}>{vitima.nome || 'Sem nome'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>Nome:</Text>
+                    <Text style={styles.text}>{vitima.nome || 'Sem nome'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Gênero:</Text>
-                  <Text style={styles.text}>{vitima.genero || 'Sem gênero'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>Gênero:</Text>
+                    <Text style={styles.text}>{vitima.genero || 'Sem gênero'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Idade:</Text>
-                  <Text style={styles.text}>{vitima.idade || 'Sem idade'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>Idade:</Text>
+                    <Text style={styles.text}>{vitima.idade || 'Sem idade'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>CPF:</Text>
-                  <Text style={styles.text}>{vitima.cpf || 'Sem CPF'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>CPF:</Text>
+                    <Text style={styles.text}>{vitima.cpf || 'Sem CPF'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Endereço:</Text>
-                  <Text style={styles.text}>{vitima.endereco || 'Sem endereço'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>Endereço:</Text>
+                    <Text style={styles.text}>{vitima.endereco || 'Sem endereço'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Etnia:</Text>
-                  <Text style={styles.text}>{vitima.etnia || 'Sem etnia'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>Etnia:</Text>
+                    <Text style={styles.text}>{vitima.etnia || 'Sem etnia'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Anotação Anatômica:</Text>
-                  <Text style={styles.text}>{vitima.anotacaoAnatomica || 'Sem anotação'}</Text>
+                    <Text variant="headlineSmall" style={styles.title}>Anotação Anatômica:</Text>
+                    <Text style={styles.text}>{vitima.anotacaoAnatomica || 'Sem anotação'}</Text>
 
-                  <Text variant="headlineSmall" style={styles.title}>Odontograma:</Text>
-                  <ScrollView horizontal>
-                    <View style={styles.odontogramaContainer}>
-                      {/* Renderize aqui os quadrantes do odontograma */}
-                      {/* Exemplo: */}
-                      <Text>Superior Esquerdo: {vitima.odontograma?.superiorEsquerdo.join(', ') || 'N/A'}</Text>
-                      <Text>Superior Direito: {vitima.odontograma?.superiorDireito.join(', ') || 'N/A'}</Text>
-                      <Text>Inferior Esquerdo: {vitima.odontograma?.inferiorEsquerdo.join(', ') || 'N/A'}</Text>
-                      <Text>Inferior Direito: {vitima.odontograma?.inferiorDireito.join(', ') || 'N/A'}</Text>
-                    </View>
-                  </ScrollView>
-                </>
-              ) : (
-                <Text>Nenhuma vítima encontrada.</Text>
-              )}
-            </ScrollView>
+                    <Text variant="headlineSmall" style={styles.title}>Odontograma:</Text>
+                    <ScrollView horizontal>
+                      <View style={styles.odontogramaContainer}>
+                        <Text>Superior Esquerdo: {vitima.odontograma?.superiorEsquerdo.join(', ') || 'N/A'}</Text>
+                        <Text>Superior Direito: {vitima.odontograma?.superiorDireito.join(', ') || 'N/A'}</Text>
+                        <Text>Inferior Esquerdo: {vitima.odontograma?.inferiorEsquerdo.join(', ') || 'N/A'}</Text>
+                        <Text>Inferior Direito: {vitima.odontograma?.inferiorDireito.join(', ') || 'N/A'}</Text>
+                      </View>
+                    </ScrollView>
+                  </>
+                ) : (
+                  <Text>Nenhuma vítima encontrada.</Text>
+                )}
+              </ScrollView>
             )}
 
             <View style={styles.botoes}>
