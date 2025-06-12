@@ -133,8 +133,7 @@ Plataforma-Gestao-Odontolegal-Pericial-Mobile/
 ### 1. Clone o repositório
 
 bash
-git clone <url-do-repositorio>
-cd Plataforma-Gestao-Odontolegal-Pericial-Mobile
+git Plataforma-Gestao-Odontolegal-Pericial-Mobile
 
 ##  Documentação da API
 
