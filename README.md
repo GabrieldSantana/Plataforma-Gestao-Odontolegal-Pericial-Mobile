@@ -134,7 +134,8 @@ Plataforma-Gestao-Odontolegal-Pericial-Mobile/
 
 bash
 git clone <url-do-repositorio>
-cd GOP - Gestão Odontolegal Pericial (Mobile)
+cd Plataforma-Gestao-Odontolegal-Pericial-Mobile
+
 ##  Documentação da API
 
 Acesse a documentação da API REST via Swagger:
