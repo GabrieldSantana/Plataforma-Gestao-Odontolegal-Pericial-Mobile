@@ -203,7 +203,7 @@ const CadastroNovoCaso = () => {
             onValueChange={(itemValue) => handleInputChange('tipo', itemValue)}
           >
             <Picker.Item label="Selecione o tipo" value="" />
-            <Picker.Item label="Lesão corporal" value="Lesão corporal" />
+            <Picker.Item label="Lesão Corporal" value="Lesão Corporal" />
             <Picker.Item
               label="Identificação por Arcos Dentais"
               value="Identificação por Arcos Dentais"
