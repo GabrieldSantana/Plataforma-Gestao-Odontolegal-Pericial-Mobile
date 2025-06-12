@@ -22,28 +22,26 @@ export default function Casos() {
   const [filteredCasos, setFilteredCasos] = useState<Caso[]>([]);
   const [refresh, setRefresh] = useState(false);
 
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [showFilterOptions, setShowFilterOptions] = useState(false);
+
   async function fetchCasos() {
     try {
       const token = await AsyncStorage.getItem('token');
-
       if (!token) {
         console.log('Token não encontrado');
         return;
       }
 
       const response = await axios.get("https://plataforma-gestao-analise-pericial-b2a1.onrender.com/api/casos", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },    
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const casosMapeados: Caso[] = response.data.casos.reverse().map((caso: any) => ({
         id: caso._id,
         title: caso.nome,
         dataDeRegistro: new Date(caso.createdAt).toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
+          day: '2-digit', month: '2-digit', year: 'numeric'
         }),
         responsavel: caso.peritoResponsavel?.nome ?? 'Desconhecido',
         vitima: caso.vitima ?? '',
@@ -52,19 +50,29 @@ export default function Casos() {
       }));
 
       setCasos(casosMapeados);
-      setFilteredCasos(casosMapeados); // Inicializa com todos os casos
+      setFilteredCasos(casosMapeados);
     } catch (erro) {
       console.error('Erro ao buscar casos:', erro);
     }
   }
 
-  // Função de filtro por palavras
   useEffect(() => {
-    const filtered = casos.filter(caso =>
-      caso.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    let filtered = casos;
+
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(caso =>
+        caso.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (statusFilter) {
+      filtered = filtered.filter(caso =>
+        caso.status.toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
     setFilteredCasos(filtered);
-  }, [searchQuery, casos]);
+  }, [searchQuery, statusFilter, casos]);
 
   useEffect(() => {
     fetchCasos();
@@ -78,9 +86,18 @@ export default function Casos() {
           onChangeText={setSearchQuery}
           value={searchQuery}
           mode="bar"
-          style={{width: 335, height: 55, backgroundColor: 'transparent', margin: 'auto', borderRadius: 10, borderBlockColor: '#00000046', borderWidth: 1.5}}
+          style={{
+            width: 335,
+            height: 55,
+            backgroundColor: 'transparent',
+            margin: 'auto',
+            borderRadius: 10,
+            borderBlockColor: '#00000046',
+            borderWidth: 1.5
+          }}
         />
       </View>
+
       <View style={styles.contentContainer}>
         <Text variant="headlineMedium" style={styles.titulo}>
           Visualização dos Casos
@@ -90,10 +107,30 @@ export default function Casos() {
           style={styles.btnFiltrar}
           icon="filter"
           mode="outlined"
-          onPress={() => console.log('Botão filtrar acionado')}
+          onPress={() => setShowFilterOptions(!showFilterOptions)}
         >
           Filtrar
         </Button>
+
+        {/* Filtros em coluna */}
+        {showFilterOptions && (
+          <View style={styles.filterButtonsContainer}>
+            {['Em andamento', 'Finalizado', 'Arquivado'].map((status) => (
+              <Button
+                key={status}
+                mode={statusFilter === status ? 'contained' : 'outlined'}
+                onPress={() =>
+                  setStatusFilter(statusFilter === status ? null : status)
+                }
+                style={styles.filterButton}
+                labelStyle={styles.filterButtonLabel}
+                contentStyle={styles.filterButtonContent}
+              >
+                {status}
+              </Button>
+            ))}
+          </View>
+        )}
 
         {!filteredCasos || filteredCasos.length === 0 ? (
           <View style={styles.carregando}>
@@ -165,6 +202,24 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+  },
+  filterButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10, 
+    marginLeft: 20,
+    marginBottom: 15,
+  },
+  filterButton: {
+    width: 165,
+  },
+  filterButtonLabel: {
+    textAlign: 'center',
+  },
+  filterButtonContent: {
+    paddingVertical: 4,
   },
   flatListContent: {
     paddingBottom: 30,
