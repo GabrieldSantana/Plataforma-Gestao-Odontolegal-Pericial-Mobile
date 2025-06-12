@@ -27,7 +27,7 @@ A **GOP - Gestão Odontolegal Pericial** é uma aplicação **mobile fullstack**
 - **JWT** – autenticação via token
 
 ## Estrutura de Pastas
-
+'''
 gestao-odontolegal-pericial-app/
 ├── .gitignore/
 ├── app.json/
@@ -42,17 +42,15 @@ gestao-odontolegal-pericial-app/
 ├── app/ # Estrutura de rotas com Expo Router
 │ ├── index.tsx # Página inicial
 │ ├── auth/ # Fluxo de autenticação
-│ │ └── tabs/
-│ │ └── adm/
+│ │ ├── tabs/
+│ │ ├── adm/
 │ │ └── casos/
 │ │ ├── dashboard/
 │ │ │ ├── layout.tsx # Layout do painel de administração
 │ │ │ ├── perfil.tsx # Perfil do usuário administrador
 │ │ │ └── index.tsx # Dashboard inicial
-│
 │ ├── dashboard/
 │ │ └── index.tsx # Tela principal do dashboard
-│
 │ ├── casos/
 │ │ ├── criar/
 │ │ │ └── index.tsx # Cadastro de novos casos
@@ -60,46 +58,38 @@ gestao-odontolegal-pericial-app/
 │ │ │ └── index.tsx # Visualização geral dos casos
 │ │ └── [id]/
 │ │ └── index.tsx # Visualização detalhada do caso (dinâmico)
-│
 │ └── usuarios/ # Gerenciamento de usuários
 │ ├── index.tsx # Lista de usuários
 │ └── adicionar.tsx # Cadastro de novos usuários
-│
 ├── api/ # Serviços para comunicação com a API
 │ ├── index.ts
 │ ├── casosService.ts
 │ ├── usuariosService.ts
 │ └── evidenciasService.ts
-│
 ├── components/ # Componentes reutilizáveis
 │ ├── Botao.tsx
 │ ├── CardCaso.tsx
 │ ├── ModalEvidencia.tsx
 │ └── InputPadrao.tsx
-│
 ├── hooks/ # Hooks personalizados
 │ ├── useAuth.ts
 │ ├── useGeoLocation.ts
 │ └── useForm.ts
-│
 ├── interfaces/ # Tipagens TypeScript
 │ ├── Caso.ts
 │ ├── Usuario.ts
 │ └── Evidencia.ts
-│
 ├── lib/ # Lógicas auxiliares (ex: auth, validações)
 │ ├── auth.ts
 │ └── validators.ts
-│
 ├── styles/ # Estilos e temas globais
 │ ├── tailwind.css
 │ └── theme.ts
-│
 └── utils/ # Funções utilitárias gerais
 ├── formatData.ts
 ├── fileHelper.ts
 └── geoHelper.ts
-
+'''
 
 ## Bibliotecas Utilizadas (principais)
 
